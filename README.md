@@ -11,4 +11,4 @@ Subsystem 7 provides platform admins and career service staff with tools to:
 The Subsystem helps admins monitor platform usage, manage users, and maintain a functioning platform. 
 
 ### Sprint 1 Goal 
-The goal of Sprint 1 is to build a working skeleton with the core system architecture, Docker container, and create a working flow between the frontend, backend, and database. 
+The goal of Sprint 1 is to build a working skeleton with the core system architecture, Docker container, and create a working flow between the frontend and backend.
