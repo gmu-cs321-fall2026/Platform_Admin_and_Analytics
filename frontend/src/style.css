@@ -1,0 +1,16 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+}
+
+h1 {
+    margin-bottom: 30px;
+}
+
+#users {
+    max-width: 600px;
+}
+
+#users div {
+    padding: 10px;
+}
