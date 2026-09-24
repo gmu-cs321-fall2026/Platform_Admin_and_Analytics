@@ -2,7 +2,7 @@
 
 **Commit:** implemented walking skeleton
 
-**Data:** 9/24/2026
+**Date:** 9/24/2026
 
 **Developer:** Mohammed El-Ghazali 
 
