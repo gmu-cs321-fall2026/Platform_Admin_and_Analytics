@@ -2,25 +2,216 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Platform Admin test</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <title>Platform Admin</title>
+
+    <link
+        rel="stylesheet"
+        href="/admin/style.css"
+    >
+
 </head>
 
 <body>
 
-    <h1>Platform Admin</h1>
+    <!-- Sidebar -->
+    <aside class="sidebar">
 
-    <h2>User Accounts</h2>
+        <div class="logo">
+            Platform Admin
+        </div>
 
-    <div id="users">
-        Loading users...
-    </div>
+        <nav>
 
-    <script src="app.js"></script>
+            <a href="/admin/users" class="nav-item active">
+                Dashboard
+            </a>
+
+            <a href="/admin/users" class="nav-item">
+                Users
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <header class="header">
+
+            <div>
+
+                <h1>Dashboard</h1>
+
+                <p>
+                    Welcome back, Administrator
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <!-- Statistics -->
+        <section class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Total Users
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="total-users"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Active Users
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="active-users"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Administrators
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="admin-users"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Suspended
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="suspended-users"
+                >
+                    0
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Users Section -->
+        <section class="users-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>User Accounts</h2>
+
+                    <p>
+                        Manage platform users
+                    </p>
+
+                </div>
+
+
+                <!-- Search -->
+                <div class="search-container">
+
+                    <input
+                        type="text"
+                        id="search"
+                        placeholder="Search users..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- User Table -->
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Name</th>
+
+                            <th>Email</th>
+
+                            <th>Role</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="users">
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                class="loading"
+                            >
+                                Loading users...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="/admin/app.js"></script>
 
 </body>
 
