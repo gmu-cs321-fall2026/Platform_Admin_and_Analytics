@@ -1,5 +1,4 @@
- 
-import com.sun.net.httpserver.HttpExchange;
+ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,29 +29,21 @@ public class UserApi {
         // or another subsystem's API.
         List<User> users = new ArrayList<>();
 
-        users.add(new User(
-                1,
-                "John Doe",
-                "john@gmu.edu",
-                "STUDENT",
-                "ACTIVE"
-        ));
-
-        users.add(new User(
-                2,
-                "Jane Smith",
-                "jane@gmu.edu",
-                "ADMIN",
-                "ACTIVE"
-        ));
-
-        users.add(new User(
-                3,
-                "Alex Johnson",
-                "alex@gmu.edu",
-                "STAFF",
-                "SUSPENDED"
-        ));
+        users.add(new User(1, "John Doe", "orbit742@example.com", "STUDENT", "ACTIVE"));
+        users.add(new User(2, "Jane Smith", "cedar318@example.com", "ADMIN", "ACTIVE"));
+        users.add(new User(3, "Alex Johnson", "comet905@example.com", "STAFF", "SUSPENDED"));
+        users.add(new User(4, "Maya Patel", "harbor261@example.com", "STUDENT", "ACTIVE"));
+        users.add(new User(5, "Noah Williams", "maple804@example.com", "STAFF", "ACTIVE"));
+        users.add(new User(6, "Sofia Garcia", "quartz537@example.com", "STUDENT", "ACTIVE"));
+        users.add(new User(7, "Ethan Brown", "river196@example.com", "ADMIN", "SUSPENDED"));
+        users.add(new User(8, "Ava Nguyen", "nova623@example.com", "STUDENT", "ACTIVE"));
+        users.add(new User(9, "Liam Davis", "pine458@example.com", "STAFF", "ACTIVE"));
+        users.add(new User(10, "Isabella Wilson", "lunar079@example.com", "STUDENT", "ACTIVE"));
+        users.add(new User(11, "Oliver Chen", "cloud382@example.com", "STUDENT", "SUSPENDED"));
+        users.add(new User(12, "Amelia Robinson", "coral651@example.com", "ADMIN", "ACTIVE"));
+        users.add(new User(13, "Lucas Martinez", "pixel924@example.com", "STAFF", "ACTIVE"));
+        users.add(new User(14, "Charlotte Lee", "meadow173@example.com", "STUDENT", "SUSPENDED"));
+        users.add(new User(15, "Elijah Thompson", "cobalt860@example.com", "STUDENT", "ACTIVE"));
 
         // Convert users to JSON
         String json = usersToJson(users);
