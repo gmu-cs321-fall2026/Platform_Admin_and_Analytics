@@ -1,111 +1,7 @@
 // User data
-let allUsers = [
-  {
-    "id": 1,
-    "name": "John Doe",
-    "email": "orbit742@example.com",
-    "role": "STUDENT",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 2,
-    "name": "Jane Smith",
-    "email": "cedar318@example.com",
-    "role": "ADMIN",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 3,
-    "name": "Alex Johnson",
-    "email": "comet905@example.com",
-    "role": "STAFF",
-    "status": "SUSPENDED"
-  },
-  {
-    "id": 4,
-    "name": "Maya Patel",
-    "email": "harbor261@example.com",
-    "role": "STUDENT",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 5,
-    "name": "Noah Williams",
-    "email": "maple804@example.com",
-    "role": "STAFF",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 6,
-    "name": "Sofia Garcia",
-    "email": "quartz537@example.com",
-    "role": "STUDENT",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 7,
-    "name": "Ethan Brown",
-    "email": "river196@example.com",
-    "role": "ADMIN",
-    "status": "SUSPENDED"
-  },
-  {
-    "id": 8,
-    "name": "Ava Nguyen",
-    "email": "nova623@example.com",
-    "role": "STUDENT",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 9,
-    "name": "Liam Davis",
-    "email": "pine458@example.com",
-    "role": "STAFF",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 10,
-    "name": "Isabella Wilson",
-    "email": "lunar079@example.com",
-    "role": "STUDENT",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 11,
-    "name": "Oliver Chen",
-    "email": "cloud382@example.com",
-    "role": "STUDENT",
-    "status": "SUSPENDED"
-  },
-  {
-    "id": 12,
-    "name": "Amelia Robinson",
-    "email": "coral651@example.com",
-    "role": "ADMIN",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 13,
-    "name": "Lucas Martinez",
-    "email": "pixel924@example.com",
-    "role": "STAFF",
-    "status": "ACTIVE"
-  },
-  {
-    "id": 14,
-    "name": "Charlotte Lee",
-    "email": "meadow173@example.com",
-    "role": "STUDENT",
-    "status": "SUSPENDED"
-  },
-  {
-    "id": 15,
-    "name": "Elijah Thompson",
-    "email": "cobalt860@example.com",
-    "role": "STUDENT",
-    "status": "ACTIVE"
-  }
-];
+let allUsers = [];
+let selectedUserId = null;
+const validRoles = ["STUDENT", "STAFF", "ADMIN"];
 
 
 // Update statistics
@@ -316,6 +212,10 @@ function viewUser(id) {
             ? "status-active"
             : "status-suspended");
 
+    selectedUserId = id;
+    document.getElementById("role-select").value = user.role;
+    document.getElementById("role-message").textContent = "";
+
     // Hide the user list and show account details
     document.querySelector(".users-section").hidden = true;
     document.getElementById("user-details").hidden = false;
@@ -336,7 +236,50 @@ document
     );
 
 
-// Initial dashboard load
-updateStatistics(allUsers);
+// Load the backend data, including previously saved roles.
+async function loadUsers() {
+    try {
+        const response = await fetch("/api/users");
+        if (!response.ok) throw new Error("Unable to load users. Please refresh to try again.");
+        allUsers = await response.json();
+        updateStatistics(allUsers);
+        searchUsers();
+    } catch (error) {
+        document.getElementById("users").innerHTML = '<tr><td colspan="6" class="loading">Unable to load users. Please refresh to try again.</td></tr>';
+    }
+}
 
-displayUsers(allUsers);
+async function saveUserRole(event) {
+    event.preventDefault();
+    const user = allUsers.find(user => user.id === selectedUserId);
+    const role = document.getElementById("role-select").value;
+    const message = document.getElementById("role-message");
+    if (!user || !validRoles.includes(role)) {
+        message.textContent = "Choose a valid role: STUDENT, STAFF, or ADMIN.";
+        return;
+    }
+    const button = document.getElementById("save-role");
+    button.disabled = true;
+    message.textContent = "Saving...";
+    try {
+        const response = await fetch(`/api/users/${user.id}/role`, {
+            method: "PUT",
+            headers: { "Content-Type": "text/plain" },
+            body: role
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not save role.");
+        user.role = result[0].role;
+        document.getElementById("detail-role").textContent = user.role;
+        updateStatistics(allUsers);
+        searchUsers();
+        message.textContent = "Role saved successfully.";
+    } catch (error) {
+        message.textContent = error.message || "Could not save role. Please try again.";
+    } finally {
+        button.disabled = false;
+    }
+}
+
+document.getElementById("role-form").addEventListener("submit", saveUserRole);
+loadUsers();

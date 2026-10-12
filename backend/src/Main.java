@@ -42,6 +42,8 @@ public class Main {
                 )
         );
 
+        server.createContext("/api/users", UserApi::handleUsers);
+
         server.start();
 
         System.out.println(

@@ -224,6 +224,17 @@
 
     <p><strong>Status:</strong> <span id="detail-status"></span></p>
 
+    <form id="role-form">
+        <label for="role-select">New role</label>
+        <select id="role-select" required>
+            <option value="STUDENT">STUDENT</option>
+            <option value="STAFF">STAFF</option>
+            <option value="ADMIN">ADMIN</option>
+        </select>
+        <button type="submit" id="save-role" class="view-button">Save Role</button>
+        <p id="role-message" role="status" aria-live="polite"></p>
+    </form>
+
     <button class="view-button" onclick="backToUsers()">
         Back to Users
     </button>

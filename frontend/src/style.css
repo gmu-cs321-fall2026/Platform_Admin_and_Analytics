@@ -416,3 +416,10 @@ tbody tr:hover {
     font-size: 15px;
     margin-bottom: 18px;
 }
+
+/* Role editor */
+#role-form { margin: 24px 0; }
+#role-form label { display: block; margin-bottom: 8px; font-weight: 600; }
+#role-select { padding: 8px 12px; margin-right: 10px; border: 1px solid #d1d5db; border-radius: 6px; }
+#save-role:disabled { opacity: 0.6; cursor: wait; }
+#role-message { min-height: 20px; }

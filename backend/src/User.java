@@ -37,6 +37,15 @@ public class User {
         return role;
     }
 
+    public static boolean isValidRole(String role) {
+        return "STUDENT".equals(role) || "STAFF".equals(role) || "ADMIN".equals(role);
+    }
+
+    public void setRole(String role) {
+        if (!isValidRole(role)) throw new IllegalArgumentException("Invalid role");
+        this.role = role;
+    }
+
     public String getStatus() {
         return status;
     }
