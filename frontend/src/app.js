@@ -219,8 +219,18 @@ function viewUser(id) {
     document.getElementById("detail-id").textContent = user.id;
     document.getElementById("detail-name").textContent = user.name;
     document.getElementById("detail-email").textContent = user.email;
-    document.getElementById("detail-role").textContent = user.role;
-    document.getElementById("detail-status").textContent = user.status;
+    const roleElement = document.getElementById("detail-role");
+    const statusElement = document.getElementById("detail-status");
+    
+    roleElement.textContent = user.role;
+    roleElement.className = "role-badge";
+    
+    statusElement.textContent = user.status;
+    statusElement.className =
+        "status-badge " +
+        (user.status === "ACTIVE"
+            ? "status-active"
+            : "status-suspended");
 
     // Hide the user list and show account details
     document.querySelector(".users-section").hidden = true;
