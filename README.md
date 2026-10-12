@@ -11,11 +11,13 @@ Subsystem 7 provides platform admins and career service staff with tools to:
 The Subsystem helps admins monitor platform usage, manage users, and maintain a functioning platform. 
 
 ### How to build
-Open Docker Desktop and run the following command: 
+Open Docker Desktop and run the following command in directory terminal: 
 
 ```
 docker compose up --build
 ```
+
+View the subsytem on http://localhost:9000/admin
 
 ### Sprint 1 Goal 
 The goal of Sprint 1 is to build a working skeleton with the core system architecture, Docker container, and create a working flow between the frontend and backend.
