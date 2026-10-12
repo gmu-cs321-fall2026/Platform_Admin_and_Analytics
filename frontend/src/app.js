@@ -155,10 +155,6 @@ function searchUsers() {
     const filteredUsers =
         allUsers.filter(user => /^\d+$/.test(searchText) ? String(user.id) === searchText :
 
-            String(user.id) === searchText
-
-            ||
-
             user.name
                 .toLowerCase()
                 .includes(searchText)
@@ -217,14 +213,14 @@ function viewUser(id) {
     document.getElementById("role-message").textContent = "";
 
     // Hide the user list and show account details
-    document.querySelector(".users-section").hidden = true;
+    document.getElementById("user-list").hidden = true;
     document.getElementById("user-details").hidden = false;
 }
 
 // Return to the user search results
 function backToUsers() {
     document.getElementById("user-details").hidden = true;
-    document.querySelector(".users-section").hidden = false;
+    document.getElementById("user-list").hidden = false;
 }
 
 // Search event
@@ -245,6 +241,12 @@ async function loadUsers() {
         updateStatistics(allUsers);
         searchUsers();
     } catch (error) {
+        const loadError = document.getElementById("load-error");
+        loadError.textContent = "Unable to load users. Please refresh to try again.";
+        loadError.hidden = false;
+        ["total-users", "active-users", "admin-users", "suspended-users"].forEach(id => {
+            document.getElementById(id).textContent = "-";
+        });
         document.getElementById("users").innerHTML = '<tr><td colspan="6" class="loading">Unable to load users. Please refresh to try again.</td></tr>';
     }
 }
@@ -281,5 +283,29 @@ async function saveUserRole(event) {
     }
 }
 
+// Both URLs use this page, but each displays its own section.
+function showCurrentPage() {
+    const path = window.location.pathname.replace(/\/+$/, "");
+    const isUsersPage = path === "/admin/users";
+
+    document.getElementById("dashboard-view").hidden = isUsersPage;
+    document.getElementById("users-view").hidden = !isUsersPage;
+    document.getElementById("page-title").textContent = isUsersPage ? "Users" : "Dashboard";
+    document.getElementById("page-description").textContent = isUsersPage
+        ? "Search user accounts and manage their roles"
+        : "Welcome back, Administrator";
+    document.title = isUsersPage ? "Users | Platform Admin" : "Dashboard | Platform Admin";
+
+    const dashboardLink = document.getElementById("dashboard-link");
+    const usersLink = document.getElementById("users-link");
+    dashboardLink.className = "nav-item" + (isUsersPage ? "" : " active");
+    usersLink.className = "nav-item" + (isUsersPage ? " active" : "");
+    const activeLink = isUsersPage ? usersLink : dashboardLink;
+    const inactiveLink = isUsersPage ? dashboardLink : usersLink;
+    activeLink.setAttribute("aria-current", "page");
+    inactiveLink.removeAttribute("aria-current");
+}
+
+showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
 loadUsers();

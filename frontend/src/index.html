@@ -30,11 +30,11 @@
 
         <nav>
 
-            <a href="/admin/users" class="nav-item active">
+            <a href="/admin" id="dashboard-link" class="nav-item">
                 Dashboard
             </a>
 
-            <a href="/admin/users" class="nav-item">
+            <a href="/admin/users" id="users-link" class="nav-item">
                 Users
             </a>
 
@@ -51,9 +51,9 @@
 
             <div>
 
-                <h1>Dashboard</h1>
+                <h1 id="page-title">Platform Admin</h1>
 
-                <p>
+                <p id="page-description">
                     Welcome back, Administrator
                 </p>
 
@@ -63,6 +63,9 @@
 
 
         <!-- Statistics -->
+        <p id="load-error" role="alert" hidden></p>
+
+        <section id="dashboard-view" hidden>
         <section class="stats">
 
             <div class="stat-card">
@@ -131,8 +134,11 @@
         </section>
 
 
+        </section>
+
+        <section id="users-view" hidden>
         <!-- Users Section -->
-        <section class="users-section">
+        <section id="user-list" class="users-section">
 
             <div class="section-header">
 
@@ -240,6 +246,8 @@
     </button>
 
 </section>
+
+        </section>
 
     </main>
 

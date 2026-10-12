@@ -18,8 +18,8 @@ public class Main {
 
         // Admin dashboard
         server.createContext(
-                "/admin/users",
-                Main::handleDashboard
+                "/admin",
+                Main::handleAdminPage
         );
 
         // CSS
@@ -51,9 +51,24 @@ public class Main {
         );
     }
 
-    private static void handleDashboard(
+    private static void handleAdminPage(
             HttpExchange exchange
     ) throws IOException {
+        String requestPath = exchange.getRequestURI().getPath();
+        if (!requestPath.equals("/admin") && !requestPath.equals("/admin/")
+                && !requestPath.equals("/admin/users") && !requestPath.equals("/admin/users/")) {
+            byte[] message = "Not found".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+            exchange.sendResponseHeaders(404, message.length);
+            try (OutputStream output = exchange.getResponseBody()) { output.write(message); }
+            return;
+        }
+        if (!exchange.getRequestMethod().equals("GET")) {
+            exchange.getResponseHeaders().set("Allow", "GET");
+            exchange.sendResponseHeaders(405, -1);
+            exchange.close();
+            return;
+        }
 
         serveFile(
                 exchange,
