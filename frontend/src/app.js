@@ -257,7 +257,11 @@ function searchUsers() {
 
 
     const filteredUsers =
-        allUsers.filter(user =>
+        allUsers.filter(user => /^\d+$/.test(searchText) ? String(user.id) === searchText :
+
+            String(user.id) === searchText
+
+            ||
 
             user.name
                 .toLowerCase()
