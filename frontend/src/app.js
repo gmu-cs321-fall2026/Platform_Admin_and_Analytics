@@ -208,37 +208,30 @@ function searchUsers() {
 }
 
 
-// View user
+// View user account information
 function viewUser(id) {
-
-    const user =
-        allUsers.find(
-            user => user.id === id
-        );
-
+    const user = allUsers.find(user => user.id === id);
 
     if (!user) {
         return;
     }
 
+    document.getElementById("detail-id").textContent = user.id;
+    document.getElementById("detail-name").textContent = user.name;
+    document.getElementById("detail-email").textContent = user.email;
+    document.getElementById("detail-role").textContent = user.role;
+    document.getElementById("detail-status").textContent = user.status;
 
-    alert(
-        "User Information\n\n" +
-
-        "Name: " +
-        user.name +
-
-        "\nEmail: " +
-        user.email +
-
-        "\nRole: " +
-        user.role +
-
-        "\nStatus: " +
-        user.status
-    );
+    // Hide the user list and show account details
+    document.querySelector(".users-section").hidden = true;
+    document.getElementById("user-details").hidden = false;
 }
 
+// Return to the user search results
+function backToUsers() {
+    document.getElementById("user-details").hidden = true;
+    document.querySelector(".users-section").hidden = false;
+}
 
 // Search event
 document
