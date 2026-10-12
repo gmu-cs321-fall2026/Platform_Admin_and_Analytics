@@ -397,3 +397,22 @@ tbody tr:hover {
     }
 
 }
+
+/* Hide sections when not in use */
+
+[hidden] {
+    display: none !important;
+}
+
+
+/* User Account Details */
+
+#user-details h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+#user-details p {
+    font-size: 15px;
+    margin-bottom: 18px;
+}
