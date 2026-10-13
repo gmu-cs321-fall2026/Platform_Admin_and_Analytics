@@ -9,6 +9,7 @@ import java.util.Properties;
 
 public class UserApi {
     private static final Path ROLE_FILE = Path.of("data", "user-roles.properties");
+    private static final Path STATUS_FILE = Path.of("data", "user-statuses.properties");
     private static final List<User> users = createUsers();
 
     private static List<User> createUsers() {
@@ -40,6 +41,18 @@ public class UserApi {
                 throw new IllegalStateException("Could not load saved user roles", e);
             }
         }
+        if (Files.exists(STATUS_FILE)) {
+            Properties saved = new Properties();
+            try (var input = Files.newInputStream(STATUS_FILE)) {
+                saved.load(input);
+                for (User user : users) {
+                    String status = saved.getProperty(String.valueOf(user.getId()));
+                    if (User.isValidStatus(status)) user.setStatus(status);
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not load saved user statuses", e);
+            }
+        }
         return users;
     }
 
@@ -55,7 +68,7 @@ public class UserApi {
             sendResponse(exchange, 200, usersToJson(users));
             return;
         }
-        if (!path.matches("/api/users/[0-9]+/role")) {
+        if (!path.matches("/api/users/[0-9]+/(role|status)")) {
             sendResponse(exchange, 404, "{\"error\":\"Not found\"}");
             return;
         }
@@ -70,28 +83,35 @@ public class UserApi {
             sendResponse(exchange, 404, "{\"error\":\"User not found\"}");
             return;
         }
+        boolean changingStatus = path.endsWith("/status");
         byte[] body = exchange.getRequestBody().readNBytes(65);
-        String role = new String(body, StandardCharsets.UTF_8).trim();
-        if (body.length > 64 || !User.isValidRole(role)) {
-            sendResponse(exchange, 400, "{\"error\":\"Choose STUDENT, STAFF, or ADMIN\"}");
+        String value = new String(body, StandardCharsets.UTF_8).trim();
+        boolean validValue = changingStatus ? User.isValidStatus(value) : User.isValidRole(value);
+        if (body.length > 64 || !validValue) {
+            String error = changingStatus ? "Choose ACTIVE or SUSPENDED" : "Choose STUDENT, STAFF, or ADMIN";
+            sendResponse(exchange, 400, "{\"error\":\"" + error + "\"}");
             return;
         }
+        Path saveFile = changingStatus ? STATUS_FILE : ROLE_FILE;
         Properties saved = new Properties();
         for (User current : users) {
-            saved.setProperty(String.valueOf(current.getId()), current == user ? role : current.getRole());
+            String previousValue = changingStatus ? current.getStatus() : current.getRole();
+            saved.setProperty(String.valueOf(current.getId()), current == user ? value : previousValue);
         }
         try {
-            Files.createDirectories(ROLE_FILE.getParent());
-            Path temporary = ROLE_FILE.resolveSibling("user-roles.properties.tmp");
+            Files.createDirectories(saveFile.getParent());
+            Path temporary = saveFile.resolveSibling(saveFile.getFileName() + ".tmp");
             try (var output = Files.newOutputStream(temporary)) {
-                saved.store(output, "Saved demo user roles");
+                saved.store(output, changingStatus ? "Saved demo user statuses" : "Saved demo user roles");
             }
-            Files.move(temporary, ROLE_FILE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Files.move(temporary, saveFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            sendResponse(exchange, 500, "{\"error\":\"Could not save role. Please try again.\"}");
+            String field = changingStatus ? "status" : "role";
+            sendResponse(exchange, 500, "{\"error\":\"Could not save " + field + ". Please try again.\"}");
             return;
         }
-        user.setRole(role);
+        if (changingStatus) user.setStatus(value);
+        else user.setRole(value);
         sendResponse(exchange, 200, usersToJson(List.of(user)));
     }
 

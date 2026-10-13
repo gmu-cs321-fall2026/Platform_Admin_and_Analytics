@@ -18,7 +18,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.role = role;
-        this.status = status;
+        setStatus(status);
     }
 
     public int getId() {
@@ -44,6 +44,15 @@ public class User {
     public void setRole(String role) {
         if (!isValidRole(role)) throw new IllegalArgumentException("Invalid role");
         this.role = role;
+    }
+
+    public static boolean isValidStatus(String status) {
+        return "ACTIVE".equals(status) || "SUSPENDED".equals(status);
+    }
+
+    public void setStatus(String status) {
+        if (!isValidStatus(status)) throw new IllegalArgumentException("Invalid status");
+        this.status = status;
     }
 
     public String getStatus() {
