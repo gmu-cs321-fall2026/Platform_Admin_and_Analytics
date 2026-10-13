@@ -423,3 +423,13 @@ tbody tr:hover {
 #role-select { padding: 8px 12px; margin-right: 10px; border: 1px solid #d1d5db; border-radius: 6px; }
 #save-role:disabled { opacity: 0.6; cursor: wait; }
 #role-message { min-height: 20px; }
+
+/* Account suspension controls */
+.account-access { border-top: 1px solid #e5e7eb; padding-top: 20px; margin: 24px 0; }
+.account-access h3 { margin: 0 0 8px; font-size: 17px; }
+.status-action.suspend-action { background: #991b1b; }
+.status-action.suspend-action:hover { background: #7f1d1d; }
+.status-action.unsuspend-action { background: #166534; }
+.status-action.unsuspend-action:hover { background: #14532d; }
+.status-action:disabled { opacity: 0.6; cursor: wait; }
+#status-message { min-height: 20px; }

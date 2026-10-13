@@ -1,6 +1,8 @@
 // User data
 let allUsers = [];
 let selectedUserId = null;
+let statusSaving = false;
+const validStatuses = ["ACTIVE", "SUSPENDED"];
 const validRoles = ["STUDENT", "STAFF", "ADMIN"];
 
 
@@ -196,21 +198,16 @@ function viewUser(id) {
     document.getElementById("detail-name").textContent = user.name;
     document.getElementById("detail-email").textContent = user.email;
     const roleElement = document.getElementById("detail-role");
-    const statusElement = document.getElementById("detail-status");
     
     roleElement.textContent = user.role;
     roleElement.className = "role-badge";
     
-    statusElement.textContent = user.status;
-    statusElement.className =
-        "status-badge " +
-        (user.status === "ACTIVE"
-            ? "status-active"
-            : "status-suspended");
+    renderUserStatus(user);
 
     selectedUserId = id;
     document.getElementById("role-select").value = user.role;
     document.getElementById("role-message").textContent = "";
+    document.getElementById("status-message").textContent = "";
 
     // Hide the user list and show account details
     document.getElementById("user-list").hidden = true;
@@ -283,6 +280,59 @@ async function saveUserRole(event) {
     }
 }
 
+// Keep the status badge and the available action consistent.
+function renderUserStatus(user) {
+    const badge = document.getElementById("detail-status");
+    const button = document.getElementById("toggle-status");
+    badge.textContent = user.status;
+    const active = user.status === "ACTIVE";
+    const valid = validStatuses.includes(user.status);
+    badge.className = "status-badge" + (valid ? (active ? " status-active" : " status-suspended") : "");
+    button.textContent = valid ? (active ? "Suspend Account" : "Unsuspend Account") : "Status unavailable";
+    button.className = "view-button status-action" + (valid ? (active ? " suspend-action" : " unsuspend-action") : "");
+    button.disabled = statusSaving || !valid;
+}
+
+async function toggleUserStatus() {
+    if (statusSaving) return;
+    const user = allUsers.find(user => user.id === selectedUserId);
+    const message = document.getElementById("status-message");
+    if (!user || !validStatuses.includes(user.status)) {
+        message.textContent = "Cannot update an account with an invalid status.";
+        return;
+    }
+    const nextStatus = user.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+    statusSaving = true;
+    renderUserStatus(user);
+    message.textContent = "Saving account status...";
+    try {
+        const response = await fetch(`/api/users/${user.id}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "text/plain" },
+            body: nextStatus
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not update account status.");
+        if (!Array.isArray(result) || result[0]?.id !== user.id || !validStatuses.includes(result[0]?.status)) {
+            throw new Error("The server returned an invalid account status. Refresh to check the account.");
+        }
+        user.status = result[0].status;
+        updateStatistics(allUsers);
+        searchUsers();
+        if (selectedUserId === user.id) {
+            message.textContent = user.status === "SUSPENDED"
+                ? "Account suspended successfully."
+                : "Account unsuspended successfully.";
+        }
+    } catch (error) {
+        if (selectedUserId === user.id) message.textContent = error.message || "Could not update account status. Please try again.";
+    } finally {
+        statusSaving = false;
+        const selectedUser = allUsers.find(current => current.id === selectedUserId);
+        if (selectedUser) renderUserStatus(selectedUser);
+    }
+}
+
 // Both URLs use this page, but each displays its own section.
 function showCurrentPage() {
     const path = window.location.pathname.replace(/\/+$/, "");
@@ -292,7 +342,7 @@ function showCurrentPage() {
     document.getElementById("users-view").hidden = !isUsersPage;
     document.getElementById("page-title").textContent = isUsersPage ? "Users" : "Dashboard";
     document.getElementById("page-description").textContent = isUsersPage
-        ? "Search user accounts and manage their roles"
+        ? "Search user accounts and manage roles and account access"
         : "Welcome back, Administrator";
     document.title = isUsersPage ? "Users | Platform Admin" : "Dashboard | Platform Admin";
 
@@ -308,4 +358,5 @@ function showCurrentPage() {
 
 showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
+document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
 loadUsers();

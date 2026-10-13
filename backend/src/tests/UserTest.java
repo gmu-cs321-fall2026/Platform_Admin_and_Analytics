@@ -4,6 +4,8 @@ public class UserTest {
 
         testUserCreation();
         testUserGetters();
+        testUserStatusChanges();
+        testInvalidStatuses();
 
         System.out.println("All User tests passed!");
     }
@@ -60,5 +62,29 @@ public class UserTest {
         }
 
         System.out.println("testUserGetters passed");
+    }
+    private static void testUserStatusChanges() {
+        User user = new User(1, "Test User", "test@example.com", "STUDENT", "ACTIVE");
+        user.setStatus("SUSPENDED");
+        if (!user.getStatus().equals("SUSPENDED")) throw new AssertionError("Suspend failed");
+        user.setStatus("ACTIVE");
+        if (!user.getStatus().equals("ACTIVE")) throw new AssertionError("Unsuspend failed");
+    }
+
+    private static void testInvalidStatuses() {
+        User user = new User(1, "Test User", "test@example.com", "STUDENT", "ACTIVE");
+        for (String invalid : new String[] {null, "", "DELETED", "active", "ADMIN"}) {
+            if (User.isValidStatus(invalid)) throw new AssertionError("Invalid status accepted");
+            try {
+                user.setStatus(invalid);
+                throw new AssertionError("Invalid status assigned");
+            } catch (IllegalArgumentException expected) {
+                if (!user.getStatus().equals("ACTIVE")) throw new AssertionError("Invalid update changed status");
+            }
+        }
+        try {
+            new User(2, "Test", "test@example.com", "STAFF", "PENDING");
+            throw new AssertionError("Invalid initial status accepted");
+        } catch (IllegalArgumentException expected) { }
     }
 }
