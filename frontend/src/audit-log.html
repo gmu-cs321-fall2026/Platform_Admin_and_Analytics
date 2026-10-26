@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Audit Log | Platform Admin</title>
+
+    <link rel="stylesheet" href="/admin/style.css">
+
+    <style>
+        .audit-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .audit-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .audit-field label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .audit-field input,
+        .audit-field select {
+            padding: 9px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font: inherit;
+        }
+
+        .audit-pagination {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .audit-note {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        #audit-message {
+            min-height: 20px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="logo">Platform Admin</div>
+
+        <nav>
+            <a href="/admin" class="nav-item">
+                Dashboard
+            </a>
+
+            <a href="/admin/users" class="nav-item">
+                Users
+            </a>
+
+            <a href="/admin/audit-log"
+               class="nav-item active"
+               aria-current="page">
+                Audit Log
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Admin Audit Log</h1>
+            <p>Review changes made to accounts and content.</p>
+        </header>
+
+        <section class="users-section">
+            <h2>Admin Actions</h2>
+
+            <p class="audit-note">
+                Dates and times are shown in Eastern Time.
+                The standalone demo records actions as demo-admin.
+            </p>
+
+            <form id="audit-filters" class="audit-filters">
+                <div class="audit-field">
+                    <label for="audit-action">Action type</label>
+
+                    <select id="audit-action">
+                        <option value="">All actions</option>
+                        <option value="ROLE_CHANGED">
+                            Role changed
+                        </option>
+                        <option value="ACCOUNT_SUSPENDED">
+                            Account suspended
+                        </option>
+                        <option value="ACCOUNT_UNSUSPENDED">
+                            Account unsuspended
+                        </option>
+                        <option value="POST_REMOVED">
+                            Post removed
+                        </option>
+                        <option value="USER_WARNED">
+                            User warned
+                        </option>
+                        <option value="FLAG_DISMISSED">
+                            Flag dismissed
+                        </option>
+                        <option value="RESOURCE_APPROVED">
+                            Resource approved
+                        </option>
+                        <option value="RESOURCE_REJECTED">
+                            Resource rejected
+                        </option>
+                        <option value="QUESTION_APPROVED">
+                            Practice question approved
+                        </option>
+                        <option value="QUESTION_REJECTED">
+                            Practice question rejected
+                        </option>
+                    </select>
+                </div>
+
+                <div class="audit-field">
+                    <label for="audit-from">Start date (Eastern)</label>
+                    <input id="audit-from" type="date">
+                </div>
+
+                <div class="audit-field">
+                    <label for="audit-to">End date (Eastern)</label>
+                    <input id="audit-to" type="date">
+                </div>
+
+                <button type="submit" class="view-button">
+                    Apply Filters
+                </button>
+
+                <button type="button"
+                        id="audit-clear"
+                        class="view-button">
+                    Clear Filters
+                </button>
+            </form>
+
+            <p id="audit-message"
+               role="status"
+               aria-live="polite"></p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date and Time (Eastern)</th>
+                            <th>Action</th>
+                            <th>ID</th>
+                            <th>Affected Item</th>
+                            <th>Admin</th>
+                            <th>Change</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="audit-entries"></tbody>
+                </table>
+            </div>
+
+            <div class="audit-pagination">
+                <button type="button"
+                        id="audit-previous"
+                        class="view-button"
+                        disabled>
+                    Previous
+                </button>
+
+                <span id="audit-page">Page 1</span>
+
+                <button type="button"
+                        id="audit-next"
+                        class="view-button"
+                        disabled>
+                    Next
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script src="/admin/audit-log.js"></script>
+</body>
+</html>

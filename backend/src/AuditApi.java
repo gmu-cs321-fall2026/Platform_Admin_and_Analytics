@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,9 +74,7 @@ public final class AuditApi {
                             action.isEmpty()
                                     || entry.action().equals(action))
                     .filter(entry -> {
-                        LocalDate date = entry.timestamp()
-                                .atZone(ZoneOffset.UTC)
-                                .toLocalDate();
+                       LocalDate date = entry.timestamp().atZone(ZoneId.of("America/New_York")).toLocalDate();
 
                         return (from == null || !date.isBefore(from))
                                 && (to == null || !date.isAfter(to));

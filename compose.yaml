@@ -1,5 +1,4 @@
 services:
-
   backend:
     build:
       context: .
@@ -7,3 +6,12 @@ services:
 
     ports:
       - "9000:9000"
+
+    environment:
+      DEMO_ADMIN_ID: "demo-admin"
+
+    volumes:
+      - platform-admin-data:/app/data
+
+volumes:
+  platform-admin-data:
