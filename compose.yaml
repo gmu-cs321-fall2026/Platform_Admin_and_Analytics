@@ -13,5 +13,17 @@ services:
     volumes:
       - platform-admin-data:/app/data
 
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/frontend/src
+
+        - action: rebuild
+          path: ./backend/src
+
+        - action: rebuild
+          path: ./Dockerfile
+
 volumes:
   platform-admin-data:
