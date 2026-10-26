@@ -56,7 +56,27 @@ public class Main {
                         "application/javascript; charset=utf-8"
                 )
         );
+        // Moderation queue API
+        server.createContext(
+                "/api/admin/moderation",
+                ModerationApi::handleQueue
+        );
 
+        // Moderation page
+        server.createContext(
+                "/admin/moderation",
+                ModerationApi::handlePage
+        );
+
+        // Moderation JavaScript
+        server.createContext(
+                "/admin/moderation.js",
+                exchange -> serveFile(
+                        exchange,
+                        "frontend/src/moderation.js",
+                        "application/javascript; charset=utf-8"
+                )
+        );
         server.start();
 
         System.out.println(
