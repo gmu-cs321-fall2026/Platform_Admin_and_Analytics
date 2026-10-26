@@ -24,3 +24,6 @@ The goal of Sprint 1 is to build a working skeleton with the core system archite
 
 ### Sprint 2 Goal 
 Implement user account management functionality, allowing for authorized admins to search users, view account info and status, suspend/unsuspend accounts, and change user roles.
+
+### Sprint 3 Goal 
+Expand the subsystem with user activity history, content moderation, and an admin audit log. Admins will be able to view and filter user activity and track changes made to accounts and content.
