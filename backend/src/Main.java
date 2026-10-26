@@ -43,6 +43,19 @@ public class Main {
         );
 
         server.createContext("/api/users", UserApi::handleUsers);
+                server.createContext(
+                "/api/admin/audit-log",
+                AuditApi::handle
+        );
+
+        server.createContext(
+                "/admin/audit-log.js",
+                exchange -> serveFile(
+                        exchange,
+                        "frontend/src/audit-log.js",
+                        "application/javascript; charset=utf-8"
+                )
+        );
 
         server.start();
 
@@ -51,18 +64,37 @@ public class Main {
         );
     }
 
-    private static void handleAdminPage(
+        private static void handleAdminPage(
             HttpExchange exchange
     ) throws IOException {
-        String requestPath = exchange.getRequestURI().getPath();
-        if (!requestPath.equals("/admin") && !requestPath.equals("/admin/")
-                && !requestPath.equals("/admin/users") && !requestPath.equals("/admin/users/")) {
-            byte[] message = "Not found".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+
+        String requestPath =
+                exchange.getRequestURI().getPath();
+
+        boolean dashboard = requestPath.equals("/admin")
+                || requestPath.equals("/admin/");
+
+        boolean users = requestPath.equals("/admin/users")
+                || requestPath.equals("/admin/users/");
+
+        boolean audit = requestPath.equals("/admin/audit-log")
+                || requestPath.equals("/admin/audit-log/");
+
+        if (!dashboard && !users && !audit) {
+            byte[] message = "Not found".getBytes(
+                    java.nio.charset.StandardCharsets.UTF_8
+            );
+
             exchange.sendResponseHeaders(404, message.length);
-            try (OutputStream output = exchange.getResponseBody()) { output.write(message); }
+
+            try (OutputStream output =
+                         exchange.getResponseBody()) {
+                output.write(message);
+            }
+
             return;
         }
+
         if (!exchange.getRequestMethod().equals("GET")) {
             exchange.getResponseHeaders().set("Allow", "GET");
             exchange.sendResponseHeaders(405, -1);
@@ -72,8 +104,10 @@ public class Main {
 
         serveFile(
                 exchange,
-                "frontend/src/index.html",
-                "text/html"
+                audit
+                        ? "frontend/src/audit-log.html"
+                        : "frontend/src/index.html",
+                "text/html; charset=utf-8"
         );
     }
 

@@ -53,6 +53,15 @@ public class UserApi {
                 throw new IllegalStateException("Could not load saved user statuses", e);
             }
         }
+
+        try {
+            AuditLog.restoreUsers(users);
+        } catch (IOException exception) {
+            throw new IllegalStateException(
+                    "Could not restore audited account changes",
+                    exception
+            );
+        }
         return users;
     }
 
@@ -92,27 +101,49 @@ public class UserApi {
             sendResponse(exchange, 400, "{\"error\":\"" + error + "\"}");
             return;
         }
-        Path saveFile = changingStatus ? STATUS_FILE : ROLE_FILE;
-        Properties saved = new Properties();
-        for (User current : users) {
-            String previousValue = changingStatus ? current.getStatus() : current.getRole();
-            saved.setProperty(String.valueOf(current.getId()), current == user ? value : previousValue);
-        }
-        try {
-            Files.createDirectories(saveFile.getParent());
-            Path temporary = saveFile.resolveSibling(saveFile.getFileName() + ".tmp");
-            try (var output = Files.newOutputStream(temporary)) {
-                saved.store(output, changingStatus ? "Saved demo user statuses" : "Saved demo user roles");
-            }
-            Files.move(temporary, saveFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            String field = changingStatus ? "status" : "role";
-            sendResponse(exchange, 500, "{\"error\":\"Could not save " + field + ". Please try again.\"}");
+                String previousValue = changingStatus
+                ? user.getStatus()
+                : user.getRole();
+
+        // Saving the current value is not a change.
+        if (previousValue.equals(value)) {
+            sendResponse(
+                    exchange,
+                    200,
+                    usersToJson(List.of(user))
+            );
             return;
         }
-        if (changingStatus) user.setStatus(value);
-        else user.setRole(value);
-        sendResponse(exchange, 200, usersToJson(List.of(user)));
+
+        try {
+            // The audit file also stores the saved account change.
+            // This avoids saving a change without its audit entry.
+            AuditLog.recordUserChange(
+                    user,
+                    value,
+                    changingStatus
+            );
+        } catch (IOException exception) {
+            sendResponse(
+                    exchange,
+                    500,
+                    "{\"error\":\"Could not save the change "
+                            + "and audit entry. Please try again.\"}"
+            );
+            return;
+        }
+
+        if (changingStatus) {
+            user.setStatus(value);
+        } else {
+            user.setRole(value);
+        }
+
+        sendResponse(
+                exchange,
+                200,
+                usersToJson(List.of(user))
+        );
     }
 
     private static String usersToJson(
