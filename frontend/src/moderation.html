@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Moderation Queue | Platform Admin</title>
+
+    <link rel="stylesheet" href="/admin/style.css">
+
+    <style>
+        .moderation-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .moderation-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .moderation-field label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .moderation-field select {
+            padding: 9px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font: inherit;
+        }
+
+        .moderation-note {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .moderation-pagination {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .review-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .review-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .review-resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        #moderation-message {
+            min-height: 20px;
+        }
+
+        #moderation-details dl {
+            display: grid;
+            grid-template-columns: 150px minmax(0, 1fr);
+            gap: 14px 20px;
+            margin: 24px 0;
+        }
+
+        #moderation-details dt {
+            font-weight: 600;
+        }
+
+        #moderation-details dd {
+            margin: 0;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .moderation-content {
+            padding: 18px;
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        @media (max-width: 700px) {
+            #moderation-details dl {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+
+            #moderation-details dd {
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="logo">Platform Admin</div>
+
+        <nav>
+            <a href="/admin" class="nav-item">
+                Dashboard
+            </a>
+
+            <a href="/admin/users" class="nav-item">
+                Users
+            </a>
+
+            <a href="/admin/moderation"
+               class="nav-item active"
+               aria-current="page">
+                Moderation
+            </a>
+
+            <a href="/admin/audit-log" class="nav-item">
+                Audit Log
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Moderation Queue</h1>
+            <p>Review reported content and pending submissions.</p>
+        </header>
+
+        <p class="moderation-note" id="moderation-demo-note" hidden>
+            Demo data is displayed until the source subsystems
+            are connected. Dates and times use Eastern Time.
+        </p>
+
+        <section id="moderation-list" class="users-section">
+            <h2>Review Items</h2>
+
+            <form id="moderation-filters"
+                  class="moderation-filters">
+
+                <div class="moderation-field">
+                    <label for="moderation-type">Item type</label>
+
+                    <select id="moderation-type">
+                        <option value="">All types</option>
+                        <option value="FLAGGED_POST">
+                            Flagged posts
+                        </option>
+                        <option value="ACCOUNT_FLAG">
+                            Account flags
+                        </option>
+                        <option value="RESOURCE">
+                            Resources
+                        </option>
+                        <option value="PRACTICE_QUESTION">
+                            Practice questions
+                        </option>
+                    </select>
+                </div>
+
+                <div class="moderation-field">
+                    <label for="moderation-status">
+                        Review status
+                    </label>
+
+                    <select id="moderation-status">
+                        <option value="">All statuses</option>
+                        <option value="PENDING">
+                            Pending review
+                        </option>
+                        <option value="RESOLVED">
+                            Resolved
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="view-button">
+                    Apply Filters
+                </button>
+
+                <button type="button"
+                        id="moderation-clear"
+                        class="view-button">
+                    Clear Filters
+                </button>
+            </form>
+
+            <p id="moderation-message"
+               role="status"
+               aria-live="polite"></p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date and Time (Eastern)</th>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Affected Item</th>
+                            <th>Reason</th>
+                            <th>Review Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="moderation-items"></tbody>
+                </table>
+            </div>
+
+            <div class="moderation-pagination">
+                <button type="button"
+                        id="moderation-previous"
+                        class="view-button"
+                        disabled>
+                    Previous
+                </button>
+
+                <span id="moderation-page">Page 1</span>
+
+                <button type="button"
+                        id="moderation-next"
+                        class="view-button"
+                        disabled>
+                    Next
+                </button>
+            </div>
+        </section>
+
+        <section id="moderation-details"
+                 class="users-section"
+                 hidden>
+
+            <h2 id="moderation-detail-title" tabindex="-1">
+                Moderation Item Details
+            </h2>
+
+            <dl>
+                <dt>Queue ID</dt>
+                <dd id="detail-queue-id"></dd>
+
+                <dt>Type</dt>
+                <dd id="detail-item-type"></dd>
+
+                <dt>Source</dt>
+                <dd id="detail-item-source"></dd>
+
+                <dt>Affected Item ID</dt>
+                <dd id="detail-target-id"></dd>
+
+                <dt>Affected Item</dt>
+                <dd id="detail-item-title"></dd>
+
+                <dt>Date and Time</dt>
+                <dd id="detail-item-date"></dd>
+
+                <dt>Reason</dt>
+                <dd id="detail-item-reason"></dd>
+
+                <dt>Review Status</dt>
+                <dd id="detail-review-status"></dd>
+            </dl>
+
+            <h3>Content / Report Details</h3>
+
+            <div id="detail-item-content"
+                 class="moderation-content"></div>
+
+            <button type="button"
+                    id="moderation-back"
+                    class="view-button">
+                Back to Queue
+            </button>
+        </section>
+    </main>
+
+    <script src="/admin/moderation.js"></script>
+</body>
+</html>
