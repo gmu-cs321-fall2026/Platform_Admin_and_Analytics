@@ -251,12 +251,66 @@
         <p id="status-message" role="status" aria-live="polite"></p>
     </section>
 
+    <!-- View User Activity -->
+    <button
+        type="button"
+        class="view-button"
+        onclick="viewUserActivity()"
+    >
+        View Activity History
+    </button>
+
     <button class="view-button" onclick="backToUsers()">
         Back to Users
     </button>
 
 </section>
 
+
+<!-- User Activity History -->
+<section id="user-activity" class="users-section" hidden>
+
+    <h2>User Activity History</h2>
+
+    <p>
+        Activity history for:
+        <strong id="activity-user-name"></strong>
+    </p>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+
+            <tbody id="activity-list">
+                <!-- Activity records will appear here -->
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <p id="no-activity" hidden>
+        No activity found for this user.
+    </p>
+
+    <button
+        type="button"
+        class="view-button"
+        onclick="backToUserDetails()"
+    >
+        Back to Account Details
+    </button>
+
+</section>
+            
         </section>
 
     </main>
