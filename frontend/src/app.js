@@ -400,7 +400,7 @@ document.getElementById("role-form").addEventListener("submit", saveUserRole);
 document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
 loadUsers();
 
-//View User Account Activity
+// View User Account Activity
 function viewUserActivity() {
 
     const user = allUsers.find(
@@ -414,56 +414,16 @@ function viewUserActivity() {
     document.getElementById("activity-user-name").textContent =
         user.name;
 
-    const activityList =
-        document.getElementById("activity-list");
+    // Reset filters when opening a user's activity history
+    document.getElementById("activity-type").value = "";
+    document.getElementById("activity-start-date").value = "";
+    document.getElementById("activity-end-date").value = "";
 
-    const noActivity =
-        document.getElementById("no-activity");
-
-    activityList.innerHTML = "";
-
-    // Find activities belonging to the selected user
-    const activities = userActivities
-        .filter(activity => activity.userId === selectedUserId)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // Display a message if no activity exists
-    if (activities.length === 0) {
-
-        noActivity.hidden = false;
-
-    } else {
-
-        noActivity.hidden = true;
-
-        activities.forEach(activity => {
-
-            const row = document.createElement("tr");
-
-            const typeCell = document.createElement("td");
-            typeCell.textContent = activity.type;
-
-            const dateCell = document.createElement("td");
-            dateCell.textContent =
-                new Date(activity.date).toLocaleString();
-
-            const descriptionCell = document.createElement("td");
-            descriptionCell.textContent = activity.description;
-
-            row.appendChild(typeCell);
-            row.appendChild(dateCell);
-            row.appendChild(descriptionCell);
-
-            activityList.appendChild(row);
-
-        });
-    }
-
-    // Hide account details and show activity history
     document.getElementById("user-details").hidden = true;
     document.getElementById("user-activity").hidden = false;
-}
 
+    filterUserActivity();
+}
 
 // Return to the selected user's account details
 function backToUserDetails() {
@@ -472,3 +432,129 @@ function backToUserDetails() {
     document.getElementById("user-details").hidden = false;
 
 }
+
+// Filter User Account Activity
+function filterUserActivity() {
+
+    const selectedType =
+        document.getElementById("activity-type").value;
+
+    const startDate =
+        document.getElementById("activity-start-date").value;
+
+    const endDate =
+        document.getElementById("activity-end-date").value;
+
+    const activityList =
+        document.getElementById("activity-list");
+
+    const noActivity =
+        document.getElementById("no-activity");
+
+    const filterMessage =
+        document.getElementById("activity-filter-message");
+
+    activityList.innerHTML = "";
+    noActivity.hidden = true;
+    filterMessage.hidden = true;
+    filterMessage.textContent = "";
+
+    // Validate date range
+    if (startDate && endDate && startDate > endDate) {
+
+        filterMessage.textContent =
+            "Invalid date range. Start date must be before or equal to end date.";
+
+        filterMessage.hidden = false;
+
+        return;
+    }
+
+    // Filter activities by selected user, type, and date range
+    const filteredActivities = userActivities
+        .filter(activity => {
+
+            if (activity.userId !== selectedUserId) {
+                return false;
+            }
+
+            if (selectedType && activity.type !== selectedType) {
+                return false;
+            }
+
+            const activityDate = activity.date.substring(0, 10);
+
+            if (startDate && activityDate < startDate) {
+                return false;
+            }
+
+            if (endDate && activityDate > endDate) {
+                return false;
+            }
+
+            return true;
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Handle no matching activity
+    if (filteredActivities.length === 0) {
+
+        const hasFilters = selectedType || startDate || endDate;
+
+        if (hasFilters) {
+            filterMessage.textContent =
+                "No activity matches the selected filters.";
+            filterMessage.hidden = false;
+        } else {
+            noActivity.hidden = false;
+        }
+
+        return;
+    }
+
+    // Display matching activities
+    filteredActivities.forEach(activity => {
+
+        const row = document.createElement("tr");
+
+        const typeCell = document.createElement("td");
+        typeCell.textContent = activity.type;
+
+        const dateCell = document.createElement("td");
+        dateCell.textContent =
+            new Date(activity.date).toLocaleString();
+
+        const descriptionCell = document.createElement("td");
+        descriptionCell.textContent = activity.description;
+
+        row.appendChild(typeCell);
+        row.appendChild(dateCell);
+        row.appendChild(descriptionCell);
+
+        activityList.appendChild(row);
+    });
+}
+
+// Clear activity filters
+function clearActivityFilters() {
+
+    document.getElementById("activity-type").value = "";
+    document.getElementById("activity-start-date").value = "";
+    document.getElementById("activity-end-date").value = "";
+
+    filterUserActivity();
+}
+
+
+// Apply filters when values change
+document.getElementById("activity-type")
+    .addEventListener("change", filterUserActivity);
+
+document.getElementById("activity-start-date")
+    .addEventListener("change", filterUserActivity);
+
+document.getElementById("activity-end-date")
+    .addEventListener("change", filterUserActivity);
+
+document.getElementById("clear-activity-filters")
+    .addEventListener("click", clearActivityFilters);
