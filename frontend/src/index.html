@@ -284,6 +284,37 @@
         <strong id="activity-user-name"></strong>
     </p>
 
+<!-- Activity Filters -->
+<div class="activity-filters">
+
+    <label for="activity-type">Activity Type</label>
+    <select id="activity-type">
+        <option value="">All Activities</option>
+        <option value="LOGIN">Login</option>
+        <option value="POST">Post</option>
+        <option value="MENTOR CONNECTION">Mentor Connection</option>
+        <option value="EVENT REGISTRATION">Event Registration</option>
+    </select>
+
+    <label for="activity-start-date">Start Date</label>
+    <input type="date" id="activity-start-date">
+
+    <label for="activity-end-date">End Date</label>
+    <input type="date" id="activity-end-date">
+
+    <button
+        type="button"
+        id="clear-activity-filters"
+        class="view-button"
+    >
+        Clear Filters
+    </button>
+
+</div>
+
+<p id="activity-filter-message" role="status" aria-live="polite" hidden></p>
+
+    
     <div class="table-container">
 
         <table>
