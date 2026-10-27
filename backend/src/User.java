@@ -47,7 +47,7 @@ public class User {
     }
 
     public static boolean isValidStatus(String status) {
-        return "ACTIVE".equals(status) || "SUSPENDED".equals(status);
+        return "ACTIVE".equals(status) || "SUSPENDED".equals(status) || "FLAGGED".equals(status);
     }
 
     public void setStatus(String status) {
@@ -58,4 +58,25 @@ public class User {
     public String getStatus() {
         return status;
     }
+
+
+    public String suspendAccount(String reason) {
+        if(getStatus().equals("FLAGGED")) return "Error: Account is not flagged.";
+
+        setStatus("SUSPENDED");
+        
+        //create Admin audit log
+        return "Account suspended. Reason given: " + reason;
+    }
+
+    public String dismissAccountFlag() {
+        if(getStatus().equals("FLAGGED")) return "Error: Account is not flagged.";
+        
+        setStatus("ACTIVE");
+
+        //create Admin audit log
+        return "Flag dismissed.";
+    }
+
+
 }
