@@ -5,6 +5,45 @@ let statusSaving = false;
 const validStatuses = ["ACTIVE", "SUSPENDED"];
 const validRoles = ["STUDENT", "STAFF", "ADMIN"];
 
+// Activity History
+const userActivities = [
+    {
+        userId: 1,
+        type: "LOGIN",
+        date: "2026-10-25T09:30:00",
+        description: "User logged into their account."
+    },
+    {
+        userId: 1,
+        type: "POST",
+        date: "2026-10-24T14:15:00",
+        description: "User created a community post."
+    },
+    {
+        userId: 1,
+        type: "MENTOR CONNECTION",
+        date: "2026-10-22T11:00:00",
+        description: "User connected with a mentor."
+    },
+    {
+        userId: 1,
+        type: "EVENT REGISTRATION",
+        date: "2026-10-20T16:45:00",
+        description: "User registered for a career event."
+    },
+    {
+        userId: 2,
+        type: "LOGIN",
+        date: "2026-10-26T08:00:00",
+        description: "User logged into their account."
+    },
+    {
+        userId: 2,
+        type: "EVENT REGISTRATION",
+        date: "2026-10-23T13:20:00",
+        description: "User registered for a career event."
+    }
+];
 
 // Update statistics
 function updateStatistics(users) {
@@ -360,3 +399,76 @@ showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
 document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
 loadUsers();
+
+//View User Account Activity
+function viewUserActivity() {
+
+    const user = allUsers.find(
+        user => user.id === selectedUserId
+    );
+
+    if (!user) {
+        return;
+    }
+
+    document.getElementById("activity-user-name").textContent =
+        user.name;
+
+    const activityList =
+        document.getElementById("activity-list");
+
+    const noActivity =
+        document.getElementById("no-activity");
+
+    activityList.innerHTML = "";
+
+    // Find activities belonging to the selected user
+    const activities = userActivities
+        .filter(activity => activity.userId === selectedUserId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Display a message if no activity exists
+    if (activities.length === 0) {
+
+        noActivity.hidden = false;
+
+    } else {
+
+        noActivity.hidden = true;
+
+        activities.forEach(activity => {
+
+            const row = document.createElement("tr");
+
+            const typeCell = document.createElement("td");
+            typeCell.textContent = activity.type;
+
+            const dateCell = document.createElement("td");
+            dateCell.textContent =
+                new Date(activity.date).toLocaleString();
+
+            const descriptionCell = document.createElement("td");
+            descriptionCell.textContent = activity.description;
+
+            row.appendChild(typeCell);
+            row.appendChild(dateCell);
+            row.appendChild(descriptionCell);
+
+            activityList.appendChild(row);
+
+        });
+    }
+
+    // Hide account details and show activity history
+    document.getElementById("user-details").hidden = true;
+    document.getElementById("user-activity").hidden = false;
+}
+
+
+// Return to the selected user's account details
+function backToUserDetails() {
+
+    document.getElementById("user-activity").hidden = true;
+    document.getElementById("user-details").hidden = false;
+
+}
