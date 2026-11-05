@@ -433,3 +433,15 @@ tbody tr:hover {
 .status-action.unsuspend-action:hover { background: #14532d; }
 .status-action:disabled { opacity: 0.6; cursor: wait; }
 #status-message { min-height: 20px; }
+
+
+
+/* Announcements */
+
+#announcement-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 650px;
+}
+
