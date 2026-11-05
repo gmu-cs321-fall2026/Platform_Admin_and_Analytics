@@ -16,6 +16,13 @@ public class Main {
                 0
         );
 
+        // Redirect Docker's default URL to the dashboard
+        server.createContext("/", exchange -> {
+            exchange.getResponseHeaders().set("Location", "/admin");
+            exchange.sendResponseHeaders(302, -1);
+            exchange.close();
+        });
+
         // Admin dashboard
         server.createContext(
                 "/admin",
@@ -100,7 +107,10 @@ public class Main {
         boolean audit = requestPath.equals("/admin/audit-log")
                 || requestPath.equals("/admin/audit-log/");
 
-        if (!dashboard && !users && !audit) {
+        boolean announcements = requestPath.equals("/admin/announcements")
+                || requestPath.equals("/admin/announcements/");
+
+        if (!dashboard && !users && !audit && !announcements) {
             byte[] message = "Not found".getBytes(
                     java.nio.charset.StandardCharsets.UTF_8
             );

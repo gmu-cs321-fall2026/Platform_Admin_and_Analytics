@@ -48,6 +48,12 @@
             <a href="/admin/audit-log" class="nav-item">
                 Audit Log
             </a>
+
+            <a href="/admin/announcements"
+               id="announcements-link"
+               class="nav-item">
+                Announcements
+            </a>
         </nav>
 
     </aside>
@@ -351,6 +357,67 @@
             
         </section>
 
+        <!-- Make and Preview Announcements -->
+        <section id="announcements-view" class="users-section" hidden>
+        
+            <h2>Make an Announcement</h2>
+        
+            <!-- Announcement Editor -->
+            <div id="announcement-editor">
+        
+                <label for="announcement-title">
+                    Announcement Title
+                </label>
+        
+                <input
+                    type="text"
+                    id="announcement-title"
+                    placeholder="Enter announcement title"
+                >
+        
+                <label for="announcement-message">
+                    Announcement Message
+                </label>
+        
+                <textarea
+                    id="announcement-message"
+                    rows="6"
+                    placeholder="Enter announcement message"
+                ></textarea>
+        
+                <p id="announcement-error" role="alert" hidden></p>
+        
+                <button
+                    type="button"
+                    class="view-button"
+                    onclick="previewAnnouncement()"
+                >
+                    Preview Announcement
+                </button>
+        
+            </div>
+        
+            <!-- Announcement Preview -->
+            <div id="announcement-preview" hidden>
+        
+                <h3>Announcement Preview</h3>
+        
+                <h4 id="preview-title"></h4>
+        
+                <p id="preview-message"></p>
+        
+                <button
+                    type="button"
+                    class="view-button"
+                    onclick="editAnnouncement()"
+                >
+                    Back to Editing
+                </button>
+        
+            </div>
+        
+        </section>            
+        
     </main>
 
 

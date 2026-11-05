@@ -372,27 +372,67 @@ async function toggleUserStatus() {
     }
 }
 
-// Both URLs use this page, but each displays its own section.
+// Display the correct admin page
 function showCurrentPage() {
+
     const path = window.location.pathname.replace(/\/+$/, "");
+
     const isUsersPage = path === "/admin/users";
+    const isAnnouncementsPage = path === "/admin/announcements";
+    const isDashboardPage = path === "/admin" || path === "";
 
-    document.getElementById("dashboard-view").hidden = isUsersPage;
-    document.getElementById("users-view").hidden = !isUsersPage;
-    document.getElementById("page-title").textContent = isUsersPage ? "Users" : "Dashboard";
-    document.getElementById("page-description").textContent = isUsersPage
-        ? "Search user accounts and manage roles and account access"
-        : "Welcome back, Administrator";
-    document.title = isUsersPage ? "Users | Platform Admin" : "Dashboard | Platform Admin";
+    document.getElementById("dashboard-view").hidden =
+        !isDashboardPage;
 
-    const dashboardLink = document.getElementById("dashboard-link");
-    const usersLink = document.getElementById("users-link");
-    dashboardLink.className = "nav-item" + (isUsersPage ? "" : " active");
-    usersLink.className = "nav-item" + (isUsersPage ? " active" : "");
-    const activeLink = isUsersPage ? usersLink : dashboardLink;
-    const inactiveLink = isUsersPage ? dashboardLink : usersLink;
-    activeLink.setAttribute("aria-current", "page");
-    inactiveLink.removeAttribute("aria-current");
+    document.getElementById("users-view").hidden =
+        !isUsersPage;
+
+    document.getElementById("announcements-view").hidden =
+        !isAnnouncementsPage;
+
+    const pageTitle = document.getElementById("page-title");
+    const pageDescription = document.getElementById("page-description");
+
+    if (isAnnouncementsPage) {
+
+        pageTitle.textContent = "Announcements";
+        pageDescription.textContent =
+            "Create and preview announcements";
+
+    } else if (isUsersPage) {
+
+        pageTitle.textContent = "Users";
+        pageDescription.textContent =
+            "Search user accounts and manage roles and account access";
+
+    } else {
+
+        pageTitle.textContent = "Dashboard";
+        pageDescription.textContent =
+            "Welcome back, Administrator";
+    }
+
+    document.title = pageTitle.textContent + " | Platform Admin";
+
+    // Update sidebar navigation
+    const links = [
+        ["dashboard-link", isDashboardPage],
+        ["users-link", isUsersPage],
+        ["announcements-link", isAnnouncementsPage]
+    ];
+
+    links.forEach(([id, active]) => {
+
+        const link = document.getElementById(id);
+
+        link.classList.toggle("active", active);
+
+        if (active) {
+            link.setAttribute("aria-current", "page");
+        } else {
+            link.removeAttribute("aria-current");
+        }
+    });
 }
 
 showCurrentPage();
@@ -558,3 +598,51 @@ document.getElementById("activity-end-date")
 
 document.getElementById("clear-activity-filters")
     .addEventListener("click", clearActivityFilters);
+
+
+// Make and Preview Announcements
+
+function previewAnnouncement() {
+
+    const title = document
+        .getElementById("announcement-title")
+        .value.trim();
+
+    const message = document
+        .getElementById("announcement-message")
+        .value.trim();
+
+    const error = document.getElementById("announcement-error");
+
+    // Reject blank titles and messages
+    if (!title || !message) {
+
+        error.textContent =
+            "Announcement title and message are required.";
+
+        error.hidden = false;
+
+        return;
+    }
+
+    error.hidden = true;
+    error.textContent = "";
+
+    // Display the preview
+    document.getElementById("preview-title").textContent = title;
+
+    document.getElementById("preview-message").textContent = message;
+
+    document.getElementById("announcement-editor").hidden = true;
+
+    document.getElementById("announcement-preview").hidden = false;
+}
+
+
+// Return to editing without losing content
+function editAnnouncement() {
+
+    document.getElementById("announcement-preview").hidden = true;
+
+    document.getElementById("announcement-editor").hidden = false;
+}

@@ -433,3 +433,36 @@ tbody tr:hover {
 .status-action.unsuspend-action:hover { background: #14532d; }
 .status-action:disabled { opacity: 0.6; cursor: wait; }
 #status-message { min-height: 20px; }
+
+/* Announcements */
+
+#announcement-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 650px;
+}
+
+#announcement-editor input,
+#announcement-editor textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+#announcement-preview {
+    max-width: 650px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+#preview-message {
+    white-space: pre-wrap;
+}
+
+#announcement-error {
+    color: #c62828;
+}
