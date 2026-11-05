@@ -598,3 +598,24 @@ document.getElementById("activity-end-date")
 
 document.getElementById("clear-activity-filters")
     .addEventListener("click", clearActivityFilters);
+
+
+
+
+
+
+
+// Make and Preview Announcements
+
+function previewAnnouncement() {
+
+    const title = document
+        .getElementById("announcement-title")
+        .value.trim();
+
+    const message = document
+        .getElementById("announcement-message")
+        .value.trim();
+
+    const error = document.getElementById("announcement-error");
+
