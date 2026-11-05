@@ -600,11 +600,6 @@ document.getElementById("clear-activity-filters")
     .addEventListener("click", clearActivityFilters);
 
 
-
-
-
-
-
 // Make and Preview Announcements
 
 function previewAnnouncement() {
