@@ -373,50 +373,14 @@ async function toggleUserStatus() {
 }
 
 
-// Display the correct admin page
-function showCurrentPage() {
-
-    const path = window.location.pathname.replace(/\/+$/, "");
-
-    const isUsersPage = path === "/admin/users";
-    const isAnnouncementsPage = path === "/admin/announcements";
-    const isDashboardPage = path === "/admin" || path === "";
-
-    document.getElementById("dashboard-view").hidden =
-        !isDashboardPage;
-
-    document.getElementById("users-view").hidden =
-        !isUsersPage;
-
-    document.getElementById("announcements-view").hidden =
-        !isAnnouncementsPage;
-
-    const pageTitle = document.getElementById("page-title");
-    const pageDescription = document.getElementById("page-description");
-
-    if (isAnnouncementsPage) {
-
-        pageTitle.textContent = "Announcements";
-        pageDescription.textContent =
-            "Create and preview announcements";
-
-    } else if (isUsersPage) {
-
-        pageTitle.textContent = "Users";
-        pageDescription.textContent =
-            "Search user accounts and manage roles and account access";
-
-    } else {
-
-        pageTitle.textContent = "Dashboard";
-        pageDescription.textContent =
-            "Welcome back, Administrator";
-    }
-
-    document.title = pageTitle.textContent + " | Platform Admin";
 
 
-
+    // Update sidebar navigation
+    const links = [
+        ["dashboard-link", isDashboardPage],
+        ["users-link", isUsersPage],
+        ["announcements-link", isAnnouncementsPage]
+    ];
 
 
 
