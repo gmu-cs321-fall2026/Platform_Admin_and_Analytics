@@ -376,7 +376,6 @@ async function toggleUserStatus() {
 
 
 
-
 // Display the correct admin page
 function showCurrentPage() {
 
@@ -394,6 +393,10 @@ function showCurrentPage() {
 
     document.getElementById("announcements-view").hidden =
         !isAnnouncementsPage;
+
+    const pageTitle = document.getElementById("page-title");
+    const pageDescription = document.getElementById("page-description");
+
 
 
 
