@@ -453,3 +453,11 @@ tbody tr:hover {
     font-size: 14px;
     font-family: inherit;
 }
+
+#announcement-preview {
+    max-width: 650px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
