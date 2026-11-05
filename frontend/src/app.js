@@ -374,7 +374,6 @@ async function toggleUserStatus() {
 
 
 
-
 // Display the correct admin page
 function showCurrentPage() {
 
@@ -402,6 +401,11 @@ function showCurrentPage() {
         pageDescription.textContent =
             "Create and preview announcements";
 
+    } else if (isUsersPage) {
+
+        pageTitle.textContent = "Users";
+        pageDescription.textContent =
+            "Search user accounts and manage roles and account access";
 
 
 
