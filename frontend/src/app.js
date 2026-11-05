@@ -375,7 +375,6 @@ async function toggleUserStatus() {
 
 
 
-
 // Display the correct admin page
 function showCurrentPage() {
 
@@ -396,6 +395,13 @@ function showCurrentPage() {
 
     const pageTitle = document.getElementById("page-title");
     const pageDescription = document.getElementById("page-description");
+
+    if (isAnnouncementsPage) {
+
+        pageTitle.textContent = "Announcements";
+        pageDescription.textContent =
+            "Create and preview announcements";
+
 
 
 
