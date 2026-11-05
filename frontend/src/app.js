@@ -373,7 +373,6 @@ async function toggleUserStatus() {
 }
 
 
-
 // Display the correct admin page
 function showCurrentPage() {
 
@@ -406,6 +405,16 @@ function showCurrentPage() {
         pageTitle.textContent = "Users";
         pageDescription.textContent =
             "Search user accounts and manage roles and account access";
+
+    } else {
+
+        pageTitle.textContent = "Dashboard";
+        pageDescription.textContent =
+            "Welcome back, Administrator";
+    }
+
+    document.title = pageTitle.textContent + " | Platform Admin";
+
 
 
 
