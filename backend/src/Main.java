@@ -16,6 +16,13 @@ public class Main {
                 0
         );
 
+        // Redirect Docker's default URL to the dashboard
+        server.createContext("/", exchange -> {
+            exchange.getResponseHeaders().set("Location", "/admin");
+            exchange.sendResponseHeaders(302, -1);
+            exchange.close();
+        });
+
         // Admin dashboard
         server.createContext(
                 "/admin",
