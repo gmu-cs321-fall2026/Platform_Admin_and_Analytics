@@ -372,8 +372,6 @@ async function toggleUserStatus() {
     }
 }
 
-
-
 // Display the correct admin page
 function showCurrentPage() {
 
@@ -436,8 +434,6 @@ function showCurrentPage() {
         }
     });
 }
-
-
 
 showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
