@@ -434,8 +434,6 @@ tbody tr:hover {
 .status-action:disabled { opacity: 0.6; cursor: wait; }
 #status-message { min-height: 20px; }
 
-
-
 /* Announcements */
 
 #announcement-editor {
@@ -461,3 +459,10 @@ tbody tr:hover {
     border-radius: 8px;
 }
 
+#preview-message {
+    white-space: pre-wrap;
+}
+
+#announcement-error {
+    color: #c62828;
+}
