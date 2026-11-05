@@ -605,7 +605,7 @@ document.getElementById("clear-activity-filters")
 
 
 
-//Make and Preview Announcements
+// Make and Preview Announcements
 
 function previewAnnouncement() {
 
@@ -630,4 +630,16 @@ function previewAnnouncement() {
         return;
     }
 
+    error.hidden = true;
+    error.textContent = "";
+
+    // Display the preview
+    document.getElementById("preview-title").textContent = title;
+
+    document.getElementById("preview-message").textContent = message;
+
+    document.getElementById("announcement-editor").hidden = true;
+
+    document.getElementById("announcement-preview").hidden = false;
+}
 
