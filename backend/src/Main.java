@@ -100,7 +100,10 @@ public class Main {
         boolean audit = requestPath.equals("/admin/audit-log")
                 || requestPath.equals("/admin/audit-log/");
 
-        if (!dashboard && !users && !audit) {
+        boolean announcements = requestPath.equals("/admin/announcements")
+                || requestPath.equals("/admin/announcements/");
+
+        if (!dashboard && !users && !audit && !announcements) {
             byte[] message = "Not found".getBytes(
                     java.nio.charset.StandardCharsets.UTF_8
             );
