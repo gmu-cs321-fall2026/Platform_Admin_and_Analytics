@@ -605,7 +605,7 @@ document.getElementById("clear-activity-filters")
 
 
 
-// Make and Preview Announcements
+//Make and Preview Announcements
 
 function previewAnnouncement() {
 
@@ -618,4 +618,16 @@ function previewAnnouncement() {
         .value.trim();
 
     const error = document.getElementById("announcement-error");
+
+    // Reject blank titles and messages
+    if (!title || !message) {
+
+        error.textContent =
+            "Announcement title and message are required.";
+
+        error.hidden = false;
+
+        return;
+    }
+
 
