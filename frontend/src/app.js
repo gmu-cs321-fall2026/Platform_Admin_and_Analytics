@@ -386,6 +386,15 @@ function showCurrentPage() {
     const isAnnouncementsPage = path === "/admin/announcements";
     const isDashboardPage = path === "/admin" || path === "";
 
+    document.getElementById("dashboard-view").hidden =
+        !isDashboardPage;
+
+    document.getElementById("users-view").hidden =
+        !isUsersPage;
+
+    document.getElementById("announcements-view").hidden =
+        !isAnnouncementsPage;
+
 
 
 
