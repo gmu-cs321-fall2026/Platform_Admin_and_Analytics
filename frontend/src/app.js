@@ -372,29 +372,26 @@ async function toggleUserStatus() {
     }
 }
 
-// Both URLs use this page, but each displays its own section.
+
+
+
+
+
+// Display the correct admin page
 function showCurrentPage() {
+
     const path = window.location.pathname.replace(/\/+$/, "");
+
     const isUsersPage = path === "/admin/users";
+    const isAnnouncementsPage = path === "/admin/announcements";
+    const isDashboardPage = path === "/admin" || path === "";
 
-    document.getElementById("dashboard-view").hidden = isUsersPage;
-    document.getElementById("users-view").hidden = !isUsersPage;
-    document.getElementById("page-title").textContent = isUsersPage ? "Users" : "Dashboard";
-    document.getElementById("page-description").textContent = isUsersPage
-        ? "Search user accounts and manage roles and account access"
-        : "Welcome back, Administrator";
-    document.title = isUsersPage ? "Users | Platform Admin" : "Dashboard | Platform Admin";
 
-    const dashboardLink = document.getElementById("dashboard-link");
-    const usersLink = document.getElementById("users-link");
-    dashboardLink.className = "nav-item" + (isUsersPage ? "" : " active");
-    usersLink.className = "nav-item" + (isUsersPage ? " active" : "");
-    const activeLink = isUsersPage ? usersLink : dashboardLink;
-    const inactiveLink = isUsersPage ? dashboardLink : usersLink;
-    activeLink.setAttribute("aria-current", "page");
-    inactiveLink.removeAttribute("aria-current");
-}
 
+
+
+
+    
 showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
 document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
