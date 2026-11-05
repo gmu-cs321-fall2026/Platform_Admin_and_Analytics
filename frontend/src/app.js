@@ -429,9 +429,16 @@ function showCurrentPage() {
 
         link.classList.toggle("active", active);
 
+        if (active) {
+            link.setAttribute("aria-current", "page");
+        } else {
+            link.removeAttribute("aria-current");
+        }
+    });
+}
 
 
-    
+
 showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
 document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
