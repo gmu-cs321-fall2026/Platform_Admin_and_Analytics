@@ -643,3 +643,11 @@ function previewAnnouncement() {
     document.getElementById("announcement-preview").hidden = false;
 }
 
+
+// Return to editing without losing content
+function editAnnouncement() {
+
+    document.getElementById("announcement-preview").hidden = true;
+
+    document.getElementById("announcement-editor").hidden = false;
+}
