@@ -61,3 +61,5 @@ pom.xml.versionsBackup
 release.properties
 replay_pid*
 node_modules/
+backend/src/database/tests/
+backend/src/database/migrations/
