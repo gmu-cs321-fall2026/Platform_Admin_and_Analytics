@@ -10,14 +10,34 @@ Subsystem 7 provides platform admins and career service staff with tools to:
 
 The Subsystem helps admins monitor platform usage, manage users, and maintain a functioning platform. 
 
-### How to build
-Start Docker Desktop. Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a local password. Then run the following command from the repository root.
+### How to build and run
+Start Docker Desktop and open a terminal in the project folder.
 
-```
+#### First time database setup
+If you already have a working `.env` with your own database password, skip to **Start the app**. If you don’t have a `.env` yet, copy the template:
+
+'''
+Copy-Item .env.example .env
+'''
+
+Start the PostgreSQL container and open its command prompt: 
+
+''' 
+docker compose up -d --wait --wait-timeout 120 db
+docker compose exec db psql -U platform_admin -d platform_admin
+'''
+
+At the `platform_admin=#` prompt, type `\password` and press Enter. Enter your new password twice, then type `\q` to return to terminal.
+
+In `.env`, set `POSTGRES_PASSWORD` to the same new password and save the file. Keep `.env` out of Git.
+
+#### Start the app
+
+'''
 docker compose up --build -d --wait --wait-timeout 120
-```
+'''
 
-View the subsytem on http://localhost:9000/admin
+Open the [Admin Dashboard](http://localhost:9000/admin). To verify the database connection, run `docker compose logs backend`. 
 
 ### Sprint 1 Goal 
 The goal of Sprint 1 is to build a working skeleton with the core system architecture, Docker container, and create a working flow between the frontend and backend.
