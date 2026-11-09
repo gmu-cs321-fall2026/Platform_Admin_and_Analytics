@@ -37,3 +37,14 @@ jobs:
 
       - name: Run frontend tests
         run: npm test
+
+      - name: Check PostgreSQL startup and persistence
+        env:
+          POSTGRES_DB: platform_admin
+          POSTGRES_USER: platform_admin
+          COMPOSE_PROJECT_NAME: platform-admin-ci
+        run: |
+          export POSTGRES_PASSWORD="$(openssl rand -hex 24)"
+          trap 'docker compose down --volumes' EXIT
+          docker compose up --build -d --wait --wait-timeout 120
+          bash backend/src/database/tests/check-postgres.sh
