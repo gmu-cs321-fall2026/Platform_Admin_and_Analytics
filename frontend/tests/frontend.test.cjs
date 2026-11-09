@@ -9,6 +9,7 @@ const app = fs.readFileSync(path.join(__dirname, "../src/app.js"), "utf8");
 function search(query) {
     const searchField = { value: query, addEventListener() {} };
     const unusedElement = {
+        classList: { toggle() {} }, 
         addEventListener() {},
         setAttribute() {},
         removeAttribute() {}
