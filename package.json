@@ -1,0 +1,11 @@
+{
+  "name": "platform-admin-and-analytics",
+  "private": true,
+  "scripts": {
+    "lint": "eslint frontend/src",
+    "test": "node --test frontend/tests/frontend.test.cjs"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  }
+}

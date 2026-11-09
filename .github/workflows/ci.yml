@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install frontend check dependencies
+        run: npm ci
+
+      - name: Lint frontend JavaScript
+        run: npm run lint
+
+      - name: Build application Docker image
+        run: docker build --tag platform-admin-ci .
+
+      - name: Run Java tests inside the application container
+        run: docker run --rm --network none --entrypoint java platform-admin-ci -ea -cp /app/out UserTest
+
+      - name: Run frontend tests
+        run: npm test
