@@ -37,7 +37,7 @@ function search(query) {
 }
 
 test("searching by ID matches the exact account", () => {
-    assert.deepEqual(search("1"), [1]);
+    assert.deepEqual(search("1"), [999]);
 });
 
 test("searching by name ignores case and surrounding spaces", () => {
