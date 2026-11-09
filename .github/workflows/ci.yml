@@ -38,7 +38,7 @@ jobs:
       - name: Run frontend tests
         run: npm test
 
-      - name: Check PostgreSQL startup and persistence
+      - name: Check PostgreSQL startup, persistence, and schema
         env:
           POSTGRES_DB: platform_admin
           POSTGRES_USER: platform_admin
@@ -48,3 +48,5 @@ jobs:
           trap 'docker compose down --volumes' EXIT
           docker compose up --build -d --wait --wait-timeout 120
           bash backend/src/database/tests/check-postgres.sh
+          docker compose run --rm --no-deps migrate
+          docker compose exec -T db psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 < backend/src/database/tests/001_admin_records_test.sql
