@@ -1,3 +1,5 @@
+import database.Database;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -10,6 +12,7 @@ import java.nio.file.Path;
 public class Main {
 
     public static void main(String[] args) throws Exception {
+        Database.verifyConnection();
 
         HttpServer server = HttpServer.create(
                 new InetSocketAddress(9000),

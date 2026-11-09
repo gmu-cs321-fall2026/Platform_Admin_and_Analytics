@@ -1,9 +1,15 @@
 ### Building and running your application
 
-When you're ready, start your application by running:
-`docker compose up --build`.
+Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a local password. Compose starts PostgreSQL 16 and waits for it to become ready before starting the Java backend.
 
-Your application will be available at http://localhost:9000/admin
+```powershell
+docker compose up --build -d --wait --wait-timeout 120
+docker compose logs backend
+```
+
+Look for `PostgreSQL connection verified.` in the logs. The dashboard is available at http://localhost:9000/admin.
+
+Run `bash backend/src/database/tests/check-postgres.sh` from Git Bash to check startup, password rejection, and data persistence. The test recreates the PostgreSQL container. Run `docker compose down` to stop the stack and keep the data volumes.
 
 ### Deploying your application to the cloud
 
