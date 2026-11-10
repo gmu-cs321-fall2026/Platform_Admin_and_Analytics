@@ -9,7 +9,7 @@ COPY backend/src ./src
 COPY frontend/src ./frontend/src
 
 RUN mkdir out && \
-    javac -d out src/*.java src/database/*.java src/tests/UserTest.java
+    javac -encoding UTF-8 -d out src/*.java src/database/*.java src/tests/*.java
 
 EXPOSE 9000
 
