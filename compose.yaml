@@ -13,6 +13,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     volumes:
       - platform-admin-data:/app/data
     develop:
@@ -39,6 +41,23 @@ services:
       timeout: 3s
       retries: 15
       start_period: 10s
+
+  migrate:
+    image: postgres:16
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGCONNECT_TIMEOUT: "5"
+      PGDATABASE: "${POSTGRES_DB:?Set POSTGRES_DB in .env}"
+      PGUSER: "${POSTGRES_USER:?Set POSTGRES_USER in .env}"
+      PGPASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
+    volumes:
+      - ./backend/src/database/migrations:/migrations:ro
+    entrypoint: ["psql", "-X", "-v", "ON_ERROR_STOP=1"]
+    command: ["-f", "/migrations/001_admin_records.sql"]
+    restart: "no"
 
 volumes:
   platform-admin-data:
