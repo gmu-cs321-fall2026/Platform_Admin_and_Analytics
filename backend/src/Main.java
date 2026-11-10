@@ -1,8 +1,6 @@
-import database.Database;
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-
+import database.Database;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -76,6 +74,12 @@ public class Main {
         server.createContext(
                 "/admin/moderation",
                 ModerationApi::handlePage
+        );
+
+        // Announcement communications API
+        server.createContext(
+                "/api/admin/announcements",
+                AnnouncementApi::handle
         );
 
         // Moderation JavaScript
