@@ -66,7 +66,7 @@ public final class AuditApi {
 
             List<AuditLog.Entry> entries = AuditLog.readAll();
 
-            // Reverse first so equal timestamps retain newest-write order.
+            // Reverse the database order for deterministic newest-first results.
             Collections.reverse(entries);
 
             List<AuditLog.Entry> filtered = entries.stream()

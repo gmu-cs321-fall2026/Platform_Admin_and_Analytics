@@ -372,6 +372,7 @@
                 <input
                     type="text"
                     id="announcement-title"
+                    maxlength="200"
                     placeholder="Enter announcement title"
                 >
         
@@ -382,10 +383,13 @@
                 <textarea
                     id="announcement-message"
                     rows="6"
+                    maxlength="5000"
                     placeholder="Enter announcement message"
                 ></textarea>
         
-                <p id="announcement-error" role="alert" hidden></p>
+                <label for="announcement-students">Selected students</label>
+                <select id="announcement-students" multiple aria-describedby="announcement-audience-help"></select>
+                <small id="announcement-audience-help">Leave the selection empty for all students.</small>
         
                 <button
                     type="button"
@@ -405,10 +409,16 @@
                 <h4 id="preview-title"></h4>
         
                 <p id="preview-message"></p>
+                <p id="preview-audience"></p>
+
+                <button type="button" id="announcement-save" class="view-button">
+                    Save Draft
+                </button>
         
                 <button
                     type="button"
                     class="view-button"
+                    id="announcement-back"
                     onclick="editAnnouncement()"
                 >
                     Back to Editing
@@ -416,7 +426,13 @@
         
             </div>
         
-        </section>            
+            <p id="announcement-error" role="alert" hidden></p>
+            <p id="announcement-save-status" role="status"></p>
+
+            <h3>Saved Announcements</h3>
+            <p id="announcement-list-status" role="status"></p>
+            <ul id="saved-announcements"></ul>
+        </section>
         
     </main>
 

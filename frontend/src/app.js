@@ -274,6 +274,15 @@ async function loadUsers() {
         const response = await fetch("/api/users");
         if (!response.ok) throw new Error("Unable to load users. Please refresh to try again.");
         allUsers = await response.json();
+        if (!document.getElementById("announcements-view").hidden) {
+            const audience = document.getElementById("announcement-students");
+            allUsers.filter(user => user.role === "STUDENT").forEach(user => {
+                const option = document.createElement("option");
+                option.value = user.id;
+                option.textContent = user.name;
+                audience.appendChild(option);
+            });
+        }
         updateStatistics(allUsers);
         searchUsers();
     } catch (error) {
@@ -601,6 +610,17 @@ document.getElementById("clear-activity-filters")
 
 
 // Make and Preview Announcements
+let announcementDraftId = null;
+
+function selectedAnnouncementStudents() {
+    return Array.from(document.getElementById("announcement-students").selectedOptions);
+}
+
+function announcementError(message) {
+    const error = document.getElementById("announcement-error");
+    error.textContent = message;
+    error.hidden = !message;
+}
 
 function previewAnnouncement() {
 
@@ -612,26 +632,22 @@ function previewAnnouncement() {
         .getElementById("announcement-message")
         .value.trim();
 
-    const error = document.getElementById("announcement-error");
-
-    // Reject blank titles and messages
     if (!title || !message) {
-
-        error.textContent =
-            "Announcement title and message are required.";
-
-        error.hidden = false;
-
+        announcementError("Announcement title and message are required.");
         return;
     }
 
-    error.hidden = true;
-    error.textContent = "";
+    announcementError("");
+    document.getElementById("announcement-save-status").textContent = "";
 
     // Display the preview
     document.getElementById("preview-title").textContent = title;
 
     document.getElementById("preview-message").textContent = message;
+    const students = selectedAnnouncementStudents();
+    document.getElementById("preview-audience").textContent = students.length
+        ? "Audience: " + students.map(student => student.textContent).join(", ")
+        : "Audience: All students";
 
     document.getElementById("announcement-editor").hidden = true;
 
@@ -641,8 +657,89 @@ function previewAnnouncement() {
 
 // Return to editing without losing content
 function editAnnouncement() {
-
+    announcementError("");
     document.getElementById("announcement-preview").hidden = true;
 
     document.getElementById("announcement-editor").hidden = false;
+}
+
+async function saveAnnouncementDraft() {
+    const button = document.getElementById("announcement-save");
+    const back = document.getElementById("announcement-back");
+    const status = document.getElementById("announcement-save-status");
+    button.disabled = true;
+    back.disabled = true;
+    announcementError("");
+    status.textContent = "Saving draft...";
+    try {
+        announcementDraftId ??= window.crypto.randomUUID();
+        const response = await fetch("/api/admin/announcements", {
+            method: "PUT",
+            body: new URLSearchParams({
+                id: announcementDraftId,
+                title: document.getElementById("preview-title").textContent,
+                message: document.getElementById("preview-message").textContent,
+                studentIds: selectedAnnouncementStudents().map(student => student.value).join(",")
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Could not save the draft.");
+        }
+        announcementDraftId = null;
+        document.getElementById("announcement-title").value = "";
+        document.getElementById("announcement-message").value = "";
+        document.getElementById("announcement-students").selectedIndex = -1;
+        editAnnouncement();
+        status.textContent = "Announcement draft saved.";
+        await loadSavedAnnouncements();
+    } catch (error) {
+        status.textContent = "";
+        announcementError(error.message || "Could not save the draft.");
+    } finally {
+        button.disabled = false;
+        back.disabled = false;
+    }
+}
+
+async function loadSavedAnnouncements() {
+    const list = document.getElementById("saved-announcements");
+    const status = document.getElementById("announcement-list-status");
+    status.textContent = "Loading saved announcements...";
+    try {
+        const response = await fetch("/api/admin/announcements");
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Could not load saved announcements.");
+        }
+        list.replaceChildren();
+        for (const announcement of result.announcements) {
+            const item = document.createElement("li");
+            const title = document.createElement("strong");
+            title.textContent = announcement.title;
+            const message = document.createElement("p");
+            message.textContent = announcement.message;
+            const details = document.createElement("p");
+            let audience = "Audience details unavailable";
+            if (announcement.audience.kind === "all_students") {
+                audience = "All students";
+            } else if (Array.isArray(announcement.audience.studentIds)) {
+                audience = "Student IDs: " + announcement.audience.studentIds.join(", ");
+            }
+            details.textContent = [
+                announcement.dispatchStatus, audience, announcement.senderId,
+                new Date(announcement.sentAt || announcement.createdAt).toLocaleString()
+            ].join(" · ");
+            item.append(title, message, details);
+            list.appendChild(item);
+        }
+        status.textContent = result.announcements.length ? "" : "No saved announcements yet.";
+    } catch (error) {
+        status.textContent = error.message || "Could not load saved announcements.";
+    }
+}
+
+if (window.location.pathname.replace(/\/+$/, "") === "/admin/announcements") {
+    document.getElementById("announcement-save").addEventListener("click", saveAnnouncementDraft);
+    loadSavedAnnouncements();
 }

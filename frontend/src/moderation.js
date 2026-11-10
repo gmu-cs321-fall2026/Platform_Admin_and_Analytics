@@ -23,6 +23,17 @@ const moderationStatusLabels = {
     RESOLVED: "Resolved"
 };
 
+const moderationActionLabels = {
+    POST_REMOVED: "Remove post",
+    USER_WARNED: "Warn user",
+    FLAG_DISMISSED: "Dismiss flag",
+    ACCOUNT_SUSPENDED: "Suspend account",
+    RESOURCE_APPROVED: "Approve resource",
+    RESOURCE_REJECTED: "Reject resource",
+    QUESTION_APPROVED: "Approve practice question",
+    QUESTION_REJECTED: "Reject practice question"
+};
+
 function formatModerationDate(value) {
     return new Date(value).toLocaleString("en-US", {
         timeZone: "America/New_York",
@@ -173,6 +184,30 @@ function openModerationItem(id) {
     document.getElementById("detail-item-content").textContent =
         item.details || "No additional details available.";
 
+    const form = document.getElementById("moderation-decision-form");
+    const action = document.getElementById("moderation-action");
+    form.reset();
+    action.replaceChildren();
+    for (const value of item.allowedActions) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = moderationActionLabels[value];
+        action.appendChild(option);
+    }
+    form.hidden = item.allowedActions.length === 0;
+    document.getElementById("moderation-decision-error").hidden = true;
+    document.getElementById("moderation-result").textContent = "";
+    const savedDecision = document.getElementById("moderation-saved-decision");
+    savedDecision.hidden = !item.decision;
+    if (item.decision) {
+        savedDecision.textContent = [
+            moderationActionLabels[item.decision.action] || item.decision.action,
+            item.decision.adminId,
+            formatModerationDate(item.decision.decidedAt),
+            item.decision.reason
+        ].join(" · ");
+    }
+
     document.getElementById("moderation-list").hidden = true;
     document.getElementById("moderation-details").hidden = false;
 
@@ -185,6 +220,45 @@ function backToModerationQueue() {
 
     if (lastModerationViewButton?.isConnected) {
         lastModerationViewButton.focus();
+    }
+}
+
+async function saveModerationDecision(event) {
+    event.preventDefault();
+    const id = document.getElementById("detail-queue-id").textContent;
+    const error = document.getElementById("moderation-decision-error");
+    const button = document.getElementById("moderation-save-decision");
+    const back = document.getElementById("moderation-back");
+    const reason = document.getElementById("moderation-decision-reason").value.trim();
+    if (!reason) {
+        error.textContent = "Enter a reason for the moderation decision.";
+        error.hidden = false;
+        return;
+    }
+    button.disabled = true;
+    back.disabled = true;
+    error.hidden = true;
+    try {
+        const response = await fetch("/api/admin/moderation/" + encodeURIComponent(id) + "/decision", {
+            method: "POST",
+            body: new URLSearchParams({
+                action: document.getElementById("moderation-action").value,
+                reason
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Could not save the moderation decision.");
+        }
+        backToModerationQueue();
+        document.getElementById("moderation-result").textContent = "Moderation decision saved.";
+        await loadModerationQueue();
+    } catch (failure) {
+        error.textContent = failure.message || "Could not save the moderation decision.";
+        error.hidden = false;
+    } finally {
+        button.disabled = false;
+        back.disabled = false;
     }
 }
 
@@ -311,5 +385,8 @@ document.getElementById("moderation-next")
 
 document.getElementById("moderation-back")
     .addEventListener("click", backToModerationQueue);
+
+document.getElementById("moderation-decision-form")
+    .addEventListener("submit", saveModerationDecision);
 
 loadModerationQueue();

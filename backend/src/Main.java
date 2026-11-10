@@ -12,10 +12,17 @@ import java.nio.file.Path;
 public class Main {
 
     public static void main(String[] args) throws Exception {
+        start(9000);
+        System.out.println("Admin & Analytics backend running on port 9000");
+    }
+
+    static HttpServer start(int port) throws IOException {
         Database.verifyConnection();
+        AuditLog.importLegacy();
+        UserApi.initialize();
 
         HttpServer server = HttpServer.create(
-                new InetSocketAddress(9000),
+                new InetSocketAddress(port),
                 0
         );
 
@@ -66,6 +73,8 @@ public class Main {
                         "application/javascript; charset=utf-8"
                 )
         );
+        server.createContext("/api/admin/announcements", AnnouncementApi::handle);
+
         // Moderation queue API
         server.createContext(
                 "/api/admin/moderation",
@@ -89,9 +98,7 @@ public class Main {
         );
         server.start();
 
-        System.out.println(
-                "Admin & Analytics backend running on port 9000"
-        );
+        return server;
     }
 
         private static void handleAdminPage(

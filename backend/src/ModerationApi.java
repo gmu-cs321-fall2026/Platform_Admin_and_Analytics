@@ -1,11 +1,15 @@
 import com.sun.net.httpserver.HttpExchange;
+import database.Database;
 
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +26,13 @@ public final class ModerationApi {
             "RESOLVED"
     );
 
+    private static final Map<String, List<String>> ACTIONS = Map.of(
+            "FLAGGED_POST", List.of("POST_REMOVED", "USER_WARNED", "FLAG_DISMISSED"),
+            "ACCOUNT_FLAG", List.of("ACCOUNT_SUSPENDED", "FLAG_DISMISSED"),
+            "RESOURCE", List.of("RESOURCE_APPROVED", "RESOURCE_REJECTED"),
+            "PRACTICE_QUESTION", List.of("QUESTION_APPROVED", "QUESTION_REJECTED")
+    );
+
     public record Item(
             String id,
             String type,
@@ -33,6 +44,10 @@ public final class ModerationApi {
             String status,
             String details
     ) {
+    }
+
+    private record Decision(String type, String targetId, String action, String adminId,
+                            String reason, Instant decidedAt) {
     }
 
     // Temporary demo data.
@@ -120,6 +135,12 @@ public final class ModerationApi {
     public static void handleQueue(HttpExchange exchange)
             throws IOException {
 
+        String path = exchange.getRequestURI().getPath();
+        if (path.matches("/api/admin/moderation/[^/]+/decision")) {
+            handleDecision(exchange, path.split("/")[4]);
+            return;
+        }
+
         if (!exchange.getRequestURI().getPath()
                 .equals("/api/admin/moderation")) {
             sendError(exchange, 404, "Not found");
@@ -170,20 +191,28 @@ public final class ModerationApi {
                 );
             }
 
-            List<Item> filtered = ITEMS.stream()
+            Map<String, Decision> saved = readDecisions();
+            Map<String, Item> queue = new HashMap<>();
+            ITEMS.forEach(item -> queue.put(item.id(), item));
+            saved.forEach((id, decision) -> queue.putIfAbsent(id, new Item(
+                    id, decision.type(), "Saved decision", decision.targetId(),
+                    decision.targetId(), decision.decidedAt(), "", "RESOLVED", ""
+            )));
+
+            List<Item> filtered = queue.values().stream()
                     .filter(item ->
                             type.isEmpty() || item.type().equals(type))
                     .filter(item ->
-                            status.isEmpty() || item.status().equals(status))
+                            status.isEmpty() || status(item, saved.get(item.id())).equals(status))
                     .sorted(Comparator.comparing(
                             Item::submittedAt
-                    ).reversed())
+                    ).reversed().thenComparing(Item::id))
                     .collect(Collectors.toList());
 
             String entries = filtered.stream()
                     .skip((long) (page - 1) * pageSize)
                     .limit(pageSize)
-                    .map(ModerationApi::toJson)
+                    .map(item -> toJson(item, saved.get(item.id())))
                     .collect(Collectors.joining(","));
 
             String response = "{"
@@ -202,7 +231,105 @@ public final class ModerationApi {
                     "Choose valid filters, a positive page number, "
                             + "and a page size between 1 and 50."
             );
+        } catch (SQLException exception) {
+            sendError(exchange, 500, "Could not load moderation decisions. Please try again.");
         }
+    }
+
+    private static void handleDecision(HttpExchange exchange, String id) throws IOException {
+        if (!exchange.getRequestMethod().equals("POST")) {
+            exchange.getResponseHeaders().set("Allow", "POST");
+            sendError(exchange, 405, "Method not allowed.");
+            return;
+        }
+        Item item = ITEMS.stream().filter(candidate -> candidate.id().equals(id)).findFirst().orElse(null);
+        if (item == null) {
+            sendError(exchange, 404, "Moderation item not found.");
+            return;
+        }
+        if ("RESOLVED".equals(item.status())) {
+            sendError(exchange, 409, "This moderation item is already resolved.");
+            return;
+        }
+        try {
+            var form = AdminHttp.readForm(exchange, 16_384);
+            String action = AdminHttp.required(form, "action", 40);
+            String reason = AdminHttp.required(form, "reason", 1_000);
+            if (!ACTIONS.get(item.type()).contains(action)) {
+                throw new IllegalArgumentException("Choose an action allowed for this moderation item.");
+            }
+            boolean saved = "ACCOUNT_SUSPENDED".equals(action)
+                    ? UserApi.suspendFlaggedAccount(item, reason)
+                    : saveDecision(item, AuditLog.newEntry(
+                            action, item.type(), item.targetId(), item.title(), reason, "", ""));
+            if (!saved) {
+                sendError(exchange, 409, "This moderation item is already resolved.");
+                return;
+            }
+            sendJson(exchange, 200, "{\"status\":\"RESOLVED\"}");
+        } catch (IllegalArgumentException exception) {
+            sendError(exchange, 400, exception.getMessage());
+        } catch (SQLException exception) {
+            sendError(exchange, 500, "Could not save the moderation decision. Please try again.");
+        }
+    }
+
+    static boolean saveDecision(Item item, AuditLog.Entry entry) throws SQLException {
+        String sql = """
+                INSERT INTO admin_moderation_decisions
+                    (queue_item_id, target_type, target_id, review_status, action, admin_id, reason, decided_at)
+                VALUES (?, ?, ?, 'RESOLVED', ?, ?, ?, ?)
+                ON CONFLICT (queue_item_id) DO UPDATE SET
+                    review_status = EXCLUDED.review_status, action = EXCLUDED.action,
+                    admin_id = EXCLUDED.admin_id, reason = EXCLUDED.reason, decided_at = EXCLUDED.decided_at
+                WHERE admin_moderation_decisions.review_status = 'PENDING'
+                    AND admin_moderation_decisions.target_type = EXCLUDED.target_type
+                    AND admin_moderation_decisions.target_id = EXCLUDED.target_id
+                """;
+        try (var connection = Database.open()) {
+            connection.setAutoCommit(false);
+            try (var statement = connection.prepareStatement(sql)) {
+                statement.setString(1, item.id());
+                statement.setString(2, item.type());
+                statement.setString(3, item.targetId());
+                statement.setString(4, entry.action());
+                statement.setString(5, entry.adminId());
+                statement.setString(6, entry.reason());
+                statement.setObject(7, entry.timestamp().atOffset(ZoneOffset.UTC));
+                if (statement.executeUpdate() == 0) {
+                    connection.rollback();
+                    return false;
+                }
+                AuditLog.insert(connection, entry);
+                connection.commit();
+                return true;
+            } catch (SQLException exception) {
+                connection.rollback();
+                throw exception;
+            }
+        }
+    }
+
+    private static Map<String, Decision> readDecisions() throws SQLException {
+        String sql = """
+                SELECT queue_item_id, target_type, target_id, action, admin_id, reason, decided_at
+                FROM admin_moderation_decisions WHERE review_status = 'RESOLVED'
+                """;
+        Map<String, Decision> saved = new HashMap<>();
+        try (var connection = Database.open(); var statement = connection.prepareStatement(sql);
+             var rows = statement.executeQuery()) {
+            while (rows.next()) {
+                saved.put(rows.getString("queue_item_id"), new Decision(
+                        rows.getString("target_type"), rows.getString("target_id"),
+                        rows.getString("action"), rows.getString("admin_id"), rows.getString("reason"),
+                        rows.getObject("decided_at", OffsetDateTime.class).toInstant()));
+            }
+        }
+        return saved;
+    }
+
+    private static String status(Item item, Decision decision) {
+        return decision == null ? item.status() : "RESOLVED";
     }
 
     public static void handlePage(HttpExchange exchange)
@@ -283,8 +410,17 @@ public final class ModerationApi {
         return query;
     }
 
-    private static String toJson(Item item) {
+    private static String toJson(Item item, Decision decision) {
         // Reuses the JSON escaping helper from your audit-log code.
+        String status = status(item, decision);
+        String actions = "PENDING".equals(status)
+                ? ACTIONS.get(item.type()).stream().map(AuditLog::quote).collect(Collectors.joining(","))
+                : "";
+        String resolution = decision == null ? "null" : "{"
+                + "\"action\":" + AuditLog.quote(decision.action()) + ","
+                + "\"adminId\":" + AuditLog.quote(decision.adminId()) + ","
+                + "\"reason\":" + AuditLog.quote(decision.reason()) + ","
+                + "\"decidedAt\":" + AuditLog.quote(decision.decidedAt().toString()) + "}";
         return "{"
                 + "\"id\":" + AuditLog.quote(item.id()) + ","
                 + "\"type\":" + AuditLog.quote(item.type()) + ","
@@ -294,7 +430,9 @@ public final class ModerationApi {
                 + "\"submittedAt\":"
                 + AuditLog.quote(item.submittedAt().toString()) + ","
                 + "\"reason\":" + AuditLog.quote(item.reason()) + ","
-                + "\"status\":" + AuditLog.quote(item.status()) + ","
+                + "\"status\":" + AuditLog.quote(status) + ","
+                + "\"allowedActions\":[" + actions + "],"
+                + "\"decision\":" + resolution + ","
                 + "\"details\":" + AuditLog.quote(item.details())
                 + "}";
     }

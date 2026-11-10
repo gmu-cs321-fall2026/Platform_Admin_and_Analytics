@@ -153,12 +153,13 @@
         </header>
 
         <p class="moderation-note" id="moderation-demo-note" hidden>
-            Demo data is displayed until the source subsystems
-            are connected. Dates and times use Eastern Time.
+            Reports use demo data until the source subsystems are connected.
+            Moderation decisions are saved here. Dates and times use Eastern Time.
         </p>
 
         <section id="moderation-list" class="users-section">
             <h2>Review Items</h2>
+            <p id="moderation-result" role="status"></p>
 
             <form id="moderation-filters"
                   class="moderation-filters">
@@ -289,6 +290,22 @@
 
             <div id="detail-item-content"
                  class="moderation-content"></div>
+
+            <p id="moderation-saved-decision" hidden></p>
+            <form id="moderation-decision-form" hidden>
+                <div class="moderation-field">
+                    <label for="moderation-action">Decision</label>
+                    <select id="moderation-action" required></select>
+                </div>
+                <div class="moderation-field">
+                    <label for="moderation-decision-reason">Decision reason</label>
+                    <textarea id="moderation-decision-reason" rows="3" maxlength="1000" required></textarea>
+                </div>
+                <p id="moderation-decision-error" role="alert" hidden></p>
+                <button type="submit" id="moderation-save-decision" class="view-button">
+                    Save Decision
+                </button>
+            </form>
 
             <button type="button"
                     id="moderation-back"
