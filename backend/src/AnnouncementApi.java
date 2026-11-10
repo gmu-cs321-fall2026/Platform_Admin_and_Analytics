@@ -135,8 +135,10 @@ public class AnnouncementApi {
             return;
         }
 
-        if (!List.of("STUDENTS", "STAFF", "EVERYONE")
-                .contains(audience)) {
+        if (audience == null ||
+                !(audience.equals("STUDENTS")
+                || audience.equals("STAFF")
+                || audience.equals("EVERYONE"))) {
 
             sendJson(exchange, 400,
                     "{\"error\":\"Invalid announcement audience.\"}");

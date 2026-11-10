@@ -602,6 +602,11 @@ document.getElementById("clear-activity-filters")
 
 // Make and Preview Announcements
 
+let announcementSending = false;
+let announcementSent = false;
+let currentAnnouncementRequestId = null;
+let currentAnnouncementSnapshot = null;
+
 function previewAnnouncement() {
 
     const title = document
@@ -612,26 +617,84 @@ function previewAnnouncement() {
         .getElementById("announcement-message")
         .value.trim();
 
+    const audience = document
+        .getElementById("announcement-audience")
+        .value;
+
     const error = document.getElementById("announcement-error");
 
-    // Reject blank titles and messages
     if (!title || !message) {
-
         error.textContent =
             "Announcement title and message are required.";
 
         error.hidden = false;
+        return;
+    }
 
+    if (title.length > 150 || message.length > 5000) {
+        error.textContent =
+            "The title or message exceeds the allowed length.";
+
+        error.hidden = false;
+        return;
+    }
+
+    if (!["STUDENTS", "STAFF", "EVERYONE"].includes(audience)) {
+        error.textContent = "Please select a valid audience.";
+        error.hidden = false;
         return;
     }
 
     error.hidden = true;
     error.textContent = "";
 
-    // Display the preview
-    document.getElementById("preview-title").textContent = title;
+    const snapshot = JSON.stringify({
+        title,
+        message,
+        audience
+    });
 
-    document.getElementById("preview-message").textContent = message;
+    // Keep the same request ID when retrying unchanged content.
+    // Generate a new ID when the announcement is modified.
+    if (snapshot !== currentAnnouncementSnapshot) {
+
+        currentAnnouncementSnapshot = snapshot;
+
+        currentAnnouncementRequestId =
+            "announcement-" +
+            Date.now() +
+            "-" +
+            Math.random().toString(36).slice(2);
+
+        announcementSent = false;
+    }
+
+    const audienceLabels = {
+        STUDENTS: "Students",
+        STAFF: "Staff",
+        EVERYONE: "Everyone"
+    };
+
+    document.getElementById("preview-title").textContent =
+        title;
+
+    document.getElementById("preview-message").textContent =
+        message;
+
+    document.getElementById("preview-audience").textContent =
+        audienceLabels[audience];
+
+    document.getElementById("announcement-send-message")
+        .textContent = "";
+
+    const sendButton =
+        document.getElementById("announcement-send");
+
+    sendButton.disabled = announcementSending || announcementSent;
+
+    sendButton.textContent = announcementSent
+        ? "Announcement Sent"
+        : "Confirm and Send";
 
     document.getElementById("announcement-editor").hidden = true;
 
@@ -640,9 +703,124 @@ function previewAnnouncement() {
 
 
 // Return to editing without losing content
+
 function editAnnouncement() {
+
+    if (announcementSending) {
+        return;
+    }
 
     document.getElementById("announcement-preview").hidden = true;
 
     document.getElementById("announcement-editor").hidden = false;
+}
+
+
+// Submit announcement to the communications subsystem
+
+async function sendAnnouncement() {
+
+    if (announcementSending || announcementSent) {
+        return;
+    }
+
+    const title = document
+        .getElementById("announcement-title")
+        .value.trim();
+
+    const message = document
+        .getElementById("announcement-message")
+        .value.trim();
+
+    const audience = document
+        .getElementById("announcement-audience")
+        .value;
+
+    const statusMessage = document
+        .getElementById("announcement-send-message");
+
+    const sendButton = document
+        .getElementById("announcement-send");
+
+    const editButton = document
+        .getElementById("announcement-edit");
+
+    if (!currentAnnouncementRequestId) {
+        statusMessage.textContent =
+            "Please review the announcement before sending.";
+
+        return;
+    }
+
+    announcementSending = true;
+
+    sendButton.disabled = true;
+    editButton.disabled = true;
+
+    sendButton.textContent = "Sending...";
+
+    statusMessage.textContent =
+        "Submitting announcement...";
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/announcements",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                },
+
+                body: new URLSearchParams({
+                    requestId: currentAnnouncementRequestId,
+                    title,
+                    message,
+                    audience
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error || "Announcement submission failed."
+            );
+        }
+
+        if (
+            result.success !== true ||
+            !result.broadcastReference
+        ) {
+            throw new Error(
+                "The server did not confirm the broadcast."
+            );
+        }
+
+        announcementSent = true;
+
+        statusMessage.textContent =
+            "Announcement sent successfully! Broadcast reference: " +
+            result.broadcastReference;
+
+        sendButton.textContent = "Announcement Sent";
+
+    } catch (error) {
+
+        statusMessage.textContent =
+            error.message ||
+            "Unable to send announcement. Please try again.";
+
+        sendButton.textContent = "Retry Sending";
+
+    } finally {
+
+        announcementSending = false;
+
+        sendButton.disabled = announcementSent;
+        editButton.disabled = false;
+    }
 }

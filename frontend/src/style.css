@@ -466,3 +466,14 @@ tbody tr:hover {
 #announcement-error {
     color: #c62828;
 }
+
+#announcement-send-message {
+    min-height: 20px;
+    margin: 15px 0;
+}
+
+#announcement-send:disabled,
+#announcement-edit:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}

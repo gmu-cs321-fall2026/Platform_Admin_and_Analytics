@@ -1,5 +1,4 @@
 import com.sun.net.httpserver.HttpExchange;
-
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -35,8 +34,6 @@ public final class ModerationApi {
     ) {
     }
 
-    // Temporary demo data.
-    // Replace this list with data from the owning subsystems later.
     private static final List<Item> ITEMS = List.of(
             new Item(
                     "MOD-001",
@@ -284,7 +281,6 @@ public final class ModerationApi {
     }
 
     private static String toJson(Item item) {
-        // Reuses the JSON escaping helper from your audit-log code.
         return "{"
                 + "\"id\":" + AuditLog.quote(item.id()) + ","
                 + "\"type\":" + AuditLog.quote(item.type()) + ","
