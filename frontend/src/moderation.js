@@ -250,9 +250,12 @@ async function saveModerationDecision(event) {
         if (!response.ok) {
             throw new Error(result.error || "Could not save the moderation decision.");
         }
+        
         backToModerationQueue();
-        document.getElementById("moderation-result").textContent = "Moderation decision saved.";
         await loadModerationQueue();
+        document.getElementById("moderation-message").textContent =
+            "Moderation decision saved successfully.";
+        
     } catch (failure) {
         error.textContent = failure.message || "Could not save the moderation decision.";
         error.hidden = false;
