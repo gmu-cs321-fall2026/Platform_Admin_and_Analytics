@@ -1,9 +1,14 @@
+import database.Database;
+
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 public final class AuditLog {
@@ -23,18 +28,14 @@ public final class AuditLog {
             "QUESTION_REJECTED"
     );
 
-    private static final Set<String> MODERATION_ACTIONS = Set.of(
-            "POST_REMOVED",
-            "USER_WARNED",
-            "FLAG_DISMISSED",
-            "RESOURCE_APPROVED",
-            "RESOURCE_REJECTED",
-            "QUESTION_APPROVED",
-            "QUESTION_REJECTED"
-    );
+    private static final String INSERT = """
+            INSERT INTO admin_audit_entries
+                (id, occurred_at, action, target_type, target_id, target_name,
+                 admin_id, reason, previous_value, new_value)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
 
-    private AuditLog() {
-    }
+    private AuditLog() {}
 
     public record Entry(
             String id,
@@ -61,17 +62,71 @@ public final class AuditLog {
                 : configured.trim();
     }
 
-    public static synchronized List<Entry> readAll()
-            throws IOException {
+    public static List<Entry> readAll() throws IOException {
+        String sql = """
+                SELECT id, occurred_at, action, target_type, target_id, target_name,
+                       admin_id, reason, previous_value, new_value
+                FROM admin_audit_entries ORDER BY occurred_at, id
+                """;
+        List<Entry> entries = new ArrayList<>();
+        try (var connection = Database.open(); var statement = connection.prepareStatement(sql);
+             var rows = statement.executeQuery()) {
+            while (rows.next()) {
+                entries.add(new Entry(
+                        rows.getString("id"),
+                        rows.getObject("occurred_at", OffsetDateTime.class).toInstant(),
+                        rows.getString("action"),
+                        rows.getString("target_type"),
+                        rows.getString("target_id"),
+                        rows.getString("target_name"),
+                        rows.getString("admin_id"),
+                        rows.getString("reason"),
+                        rows.getString("previous_value"),
+                        rows.getString("new_value")
+                ));
+            }
+        } catch (SQLException exception) {
+            throw new IOException("Could not read PostgreSQL audit entries", exception);
+        }
+        return entries;
+    }
 
+    static void importLegacy() throws IOException {
+        importLegacy(FILE);
+    }
+
+    static void importLegacy(Path file) throws IOException {
+        List<Entry> entries = readLegacy(file);
+        if (entries.isEmpty()) {
+            return;
+        }
+        try (var connection = Database.open()) {
+            connection.setAutoCommit(false);
+            try (var statement = connection.prepareStatement(INSERT + " ON CONFLICT (id) DO NOTHING")) {
+                for (Entry entry : entries) {
+                    bind(statement, entry);
+                    statement.addBatch();
+                }
+                statement.executeBatch();
+                connection.commit();
+            } catch (SQLException exception) {
+                connection.rollback();
+                throw exception;
+            }
+        } catch (SQLException exception) {
+            throw new IOException("Could not import the saved audit history", exception);
+        }
+    }
+
+    private static List<Entry> readLegacy(Path file) throws IOException {
         List<Entry> entries = new ArrayList<>();
 
-        if (!Files.exists(FILE)) {
+        if (!Files.exists(file)) {
             return entries;
         }
 
         for (String line :
-                Files.readAllLines(FILE, StandardCharsets.UTF_8)) {
+                Files.readAllLines(file, StandardCharsets.UTF_8)) {
 
             if (line.isBlank()) {
                 continue;
@@ -97,7 +152,7 @@ public final class AuditLog {
                 }
 
                 entries.add(new Entry(
-                        fields[0],
+                        UUID.fromString(fields[0]).toString(),
                         Instant.parse(fields[1]),
                         fields[2],
                         fields[3],
@@ -119,93 +174,30 @@ public final class AuditLog {
         return entries;
     }
 
-    public static synchronized void recordUserChange(
-            User user,
-            String value,
-            boolean changingStatus
-    ) throws IOException {
-
-        if (changingStatus && !User.isValidStatus(value)) {
-            throw new IllegalArgumentException("Invalid status");
-        }
-
-        if (!changingStatus && !User.isValidRole(value)) {
-            throw new IllegalArgumentException("Invalid role");
-        }
-
-        String previousValue = changingStatus
-                ? user.getStatus()
-                : user.getRole();
-
-        if (previousValue.equals(value)) {
-            return;
-        }
-
+    static Entry userChange(User user, String value, boolean changingStatus, String reason) {
+        String previousValue = changingStatus ? user.getStatus() : user.getRole();
         String action = changingStatus
-                ? (value.equals("SUSPENDED")
-                    ? "ACCOUNT_SUSPENDED"
-                    : "ACCOUNT_UNSUSPENDED")
+                ? (value.equals("SUSPENDED") ? "ACCOUNT_SUSPENDED" : "ACCOUNT_UNSUSPENDED")
                 : "ROLE_CHANGED";
-
-        append(new Entry(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                action,
-                "USER",
-                String.valueOf(user.getId()),
-                user.getName(),
-                demoAdminId(),
-                "",
-                previousValue,
-                value
-        ));
+        return newEntry(action, "USER", String.valueOf(user.getId()), user.getName(),
+                reason, previousValue, value);
     }
 
-    // Called by the moderation-action feature when it is implemented.
-    // This does not create fake moderation entries.
-    public static synchronized void recordModerationAction(
-            String action,
-            String targetType,
-            String targetId,
-            String targetName,
-            String reason
-    ) throws IOException {
-
-        if (!MODERATION_ACTIONS.contains(action)) {
-            throw new IllegalArgumentException(
-                    "Invalid moderation action"
-            );
-        }
-
-        if (targetType == null || targetType.isBlank()
-                || targetId == null || targetId.isBlank()) {
-            throw new IllegalArgumentException(
-                    "An affected item is required"
-            );
-        }
-
-        if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException(
-                    "A moderation reason is required"
-            );
-        }
-
-        append(new Entry(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                action,
-                targetType,
-                targetId,
-                targetName == null ? "" : targetName,
-                demoAdminId(),
-                reason.trim(),
-                "",
-                ""
-        ));
+    static Entry newEntry(String action, String targetType, String targetId, String targetName,
+                          String reason, String previousValue, String newValue) {
+        return new Entry(UUID.randomUUID().toString(), Instant.now(), action, targetType, targetId,
+                targetName, demoAdminId(), reason, previousValue, newValue);
     }
 
-    // Replays account changes from the same file that stores the audit log.
-    // Existing role/status properties are loaded first by UserApi.
+    static void recordUserChange(User user, String value, boolean changingStatus) throws IOException {
+        try (var connection = Database.open()) {
+            insert(connection, userChange(user, value, changingStatus, ""));
+        } catch (SQLException exception) {
+            throw new IOException("Could not save the audit entry", exception);
+        }
+    }
+
+    // Replay account changes after loading any older role and status files.
     public static synchronized void restoreUsers(
             List<User> users
     ) throws IOException {
@@ -249,88 +241,24 @@ public final class AuditLog {
         }
     }
 
-    private static void append(Entry entry)
-            throws IOException {
-
-        List<Entry> entries = readAll();
-        entries.add(entry);
-
-        StringBuilder contents = new StringBuilder();
-
-        for (Entry current : entries) {
-            String[] fields = {
-                    current.id(),
-                    current.timestamp().toString(),
-                    current.action(),
-                    current.targetType(),
-                    current.targetId(),
-                    current.targetName(),
-                    current.adminId(),
-                    current.reason(),
-                    current.previousValue(),
-                    current.newValue()
-            };
-
-            for (int i = 0; i < fields.length; i++) {
-                if (i > 0) {
-                    contents.append('\t');
-                }
-
-                contents.append(encode(fields[i]));
-            }
-
-            contents.append('\n');
-        }
-
-        Files.createDirectories(FILE.getParent());
-
-        Path temporary = Files.createTempFile(
-                FILE.getParent(),
-                "admin-audit-",
-                ".tmp"
-        );
-
-        try {
-            byte[] bytes = contents.toString()
-                    .getBytes(StandardCharsets.UTF_8);
-
-            try (FileChannel channel = FileChannel.open(
-                    temporary,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-            )) {
-                ByteBuffer buffer = ByteBuffer.wrap(bytes);
-
-                while (buffer.hasRemaining()) {
-                    channel.write(buffer);
-                }
-
-                channel.force(true);
-            }
-
-            try {
-                Files.move(
-                        temporary,
-                        FILE,
-                        StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING
-                );
-            } catch (AtomicMoveNotSupportedException exception) {
-                Files.move(
-                        temporary,
-                        FILE,
-                        StandardCopyOption.REPLACE_EXISTING
-                );
-            }
-        } finally {
-            Files.deleteIfExists(temporary);
+    static void insert(Connection connection, Entry entry) throws SQLException {
+        try (var statement = connection.prepareStatement(INSERT)) {
+            bind(statement, entry);
+            statement.executeUpdate();
         }
     }
 
-    private static String encode(String value) {
-        return Base64.getEncoder().encodeToString(
-                value.getBytes(StandardCharsets.UTF_8)
-        );
+    private static void bind(PreparedStatement statement, Entry entry) throws SQLException {
+        statement.setObject(1, UUID.fromString(entry.id()));
+        statement.setObject(2, entry.timestamp().atOffset(ZoneOffset.UTC));
+        statement.setString(3, entry.action());
+        statement.setString(4, entry.targetType());
+        statement.setString(5, entry.targetId());
+        statement.setString(6, entry.targetName());
+        statement.setString(7, entry.adminId());
+        statement.setString(8, entry.reason());
+        statement.setString(9, entry.previousValue());
+        statement.setString(10, entry.newValue());
     }
 
     private static String decode(String value) {
