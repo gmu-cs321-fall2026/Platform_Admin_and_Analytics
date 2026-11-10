@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -10,7 +11,34 @@ import java.util.Properties;
 public class UserApi {
     private static final Path ROLE_FILE = Path.of("data", "user-roles.properties");
     private static final Path STATUS_FILE = Path.of("data", "user-statuses.properties");
-    private static final List<User> users = createUsers();
+    private static List<User> users;
+
+    static synchronized void initialize() {
+        users = createUsers();
+    }
+
+    static synchronized boolean areStudentIds(List<String> ids) {
+        return ids.size() <= users.size() && ids.stream().allMatch(id -> users.stream().anyMatch(
+                user -> "STUDENT".equals(user.getRole()) && id.equals(String.valueOf(user.getId()))));
+    }
+
+    static synchronized boolean suspendFlaggedAccount(ModerationApi.Item item, String reason)
+            throws SQLException {
+        User user = findUser(item.targetId());
+        if (user == null) {
+            throw new IllegalArgumentException("The flagged account could not be found.");
+        }
+        AuditLog.Entry entry = AuditLog.userChange(user, "SUSPENDED", true, reason);
+        if (!ModerationApi.saveDecision(item, entry)) {
+            return false;
+        }
+        user.setStatus("SUSPENDED");
+        return true;
+    }
+
+    private static User findUser(String id) {
+        return users.stream().filter(user -> id.equals(String.valueOf(user.getId()))).findFirst().orElse(null);
+    }
 
     private static List<User> createUsers() {
         List<User> users = new ArrayList<>();
@@ -87,7 +115,7 @@ public class UserApi {
             return;
         }
         String id = path.split("/")[3];
-        User user = users.stream().filter(u -> String.valueOf(u.getId()).equals(id)).findFirst().orElse(null);
+        User user = findUser(id);
         if (user == null) {
             sendResponse(exchange, 404, "{\"error\":\"User not found\"}");
             return;
@@ -116,7 +144,7 @@ public class UserApi {
         }
 
         try {
-            // The audit file also stores the saved account change.
+            // The database audit entry also stores the saved account change.
             // This avoids saving a change without its audit entry.
             AuditLog.recordUserChange(
                     user,
