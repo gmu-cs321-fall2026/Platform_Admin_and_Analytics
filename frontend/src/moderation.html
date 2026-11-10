@@ -306,7 +306,45 @@
                     Save Decision
                 </button>
             </form>
+            
+<form id="moderation-decision-form" hidden>
+    <h3>Complete Moderation Action</h3>
 
+    <div class="moderation-field">
+        <label for="moderation-action">Action</label>
+        <select id="moderation-action" required></select>
+    </div>
+
+    <div class="moderation-field">
+        <label for="moderation-decision-reason">
+            Reason for action
+        </label>
+
+        <textarea id="moderation-decision-reason"
+                  rows="4"
+                  maxlength="1000"
+                  required
+                  style="width: 100%; padding: 12px;"></textarea>
+    </div>
+
+    <p id="moderation-decision-error"
+       role="alert"
+       hidden
+       style="color: #c62828;"></p>
+
+    <button type="submit"
+            id="moderation-save-decision"
+            class="view-button">
+        Save Decision
+    </button>
+</form>
+
+<p id="moderation-saved-decision" hidden></p>
+
+<p id="moderation-result"
+   role="status"
+   aria-live="polite"></p>
+            
             <button type="button"
                     id="moderation-back"
                     class="view-button">
