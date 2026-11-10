@@ -380,7 +380,7 @@
                 <label for="announcement-message">
                     Announcement Message
                 </label>
-        
+                
                 <textarea
                     id="announcement-message"
                     rows="6"
@@ -390,6 +390,41 @@
 
                 ></textarea>
                 
+                <h3>Select Recipients</h3>
+
+                <label for="announcement-audience">
+                    Audience
+                </label>
+
+                <select id="announcement-audience">
+                    <option value="ALL">All Students</option>
+                    <option value="YEAR">Graduation Year</option>
+                    <option value="MAJOR">Major</option>
+                </select>
+
+                <div id="announcement-year-container" hidden>
+                    <label for="announcement-year">
+                        Graduation Year
+                    </label>
+                    <select id="announcement-year">
+                        <option value="">Select a year</option>
+                    </select>
+                </div>
+
+                <div id="announcement-major-container" hidden>
+                    <label for="announcement-major">
+                        Major
+                    </label>
+                    <select id="announcement-major">
+                        <option value="">Select a major</option>
+                    </select>
+                </div>
+
+                <p id="recipient-count" aria-live="polite">
+                    0 matching students
+                </p>
+
+
                 <label for="announcement-audience">
                     Select Audience
                 </label>
@@ -425,6 +460,8 @@
                 </p>
         
                 <p id="preview-message"></p>
+
+                <p id="preview-recipients"></p>
                 
                 <p
                     id="announcement-send-message"

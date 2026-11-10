@@ -6,6 +6,8 @@ public class User {
     private String email;
     private String role;
     private String status;
+    private int graduationYear;
+    private String major;
 
     public User(
             int id,
@@ -19,6 +21,14 @@ public class User {
         this.email = email;
         this.role = role;
         setStatus(status);
+    }
+
+    public User(int id, String name, String email,
+                String role, String status,
+                int graduationYear, String major) {
+        this(id, name, email, role, status);
+        this.graduationYear = graduationYear;
+        this.major = major;
     }
 
     public int getId() {
@@ -35,6 +45,14 @@ public class User {
 
     public String getRole() {
         return role;
+    }
+
+    public int getGraduationYear() {
+        return graduationYear;
+    }
+
+    public String getMajor() {
+        return major;
     }
 
     public static boolean isValidRole(String role) {

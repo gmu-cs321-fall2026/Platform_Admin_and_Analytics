@@ -14,6 +14,7 @@ public class UserApi {
 
     private static List<User> createUsers() {
         List<User> users = new ArrayList<>();
+        /* 
         users.add(new User(1, "John Doe", "orbit742@example.com", "STUDENT", "ACTIVE"));
         users.add(new User(2, "Jane Smith", "cedar318@example.com", "ADMIN", "ACTIVE"));
         users.add(new User(3, "Alex Johnson", "comet905@example.com", "STAFF", "SUSPENDED"));
@@ -29,6 +30,24 @@ public class UserApi {
         users.add(new User(13, "Lucas Martinez", "pixel924@example.com", "STAFF", "ACTIVE"));
         users.add(new User(14, "Charlotte Lee", "meadow173@example.com", "STUDENT", "SUSPENDED"));
         users.add(new User(15, "Elijah Thompson", "cobalt860@example.com", "STUDENT", "ACTIVE"));
+        */
+       users.add(new User(1, "John Doe", "orbit742@example.com",
+                "STUDENT", "ACTIVE", 2027, "Computer Science"));
+        users.add(new User(4, "Maya Patel", "harbor261@example.com",
+                "STUDENT", "ACTIVE", 2028, "Information Technology"));
+        users.add(new User(6, "Sofia Garcia", "quartz537@example.com",
+                "STUDENT", "ACTIVE", 2027, "Psychology"));
+        users.add(new User(8, "Ava Nguyen", "nova623@example.com",
+                "STUDENT", "ACTIVE", 2029, "Business"));
+        users.add(new User(10, "Isabella Wilson", "lunar079@example.com",
+                "STUDENT", "ACTIVE", 2028, "Computer Science"));
+        users.add(new User(11, "Oliver Chen", "cloud382@example.com",
+                "STUDENT", "SUSPENDED", 2027, "Information Technology"));
+        users.add(new User(14, "Charlotte Lee", "meadow173@example.com",
+                "STUDENT", "SUSPENDED", 2029, "Psychology"));
+        users.add(new User(15, "Elijah Thompson", "cobalt860@example.com",
+                "STUDENT", "ACTIVE", 2028, "Business"));
+        
         if (Files.exists(ROLE_FILE)) {
             Properties saved = new Properties();
             try (var input = Files.newInputStream(ROLE_FILE)) {
@@ -146,8 +165,7 @@ public class UserApi {
         );
     }
 
-    private static String usersToJson(
-            List<User> users) {
+    private static String usersToJson(List<User> users) {
 
         StringBuilder json = new StringBuilder();
 
@@ -177,6 +195,14 @@ public class UserApi {
 
             json.append("\"status\":\"")
                     .append(user.getStatus())
+                    .append("\",");
+
+            json.append("\"graduationYear\":")
+                    .append(user.getGraduationYear())
+                    .append(",");
+
+            json.append("\"major\":\"")
+                    .append(user.getMajor() == null ? "" : user.getMajor())
                     .append("\"");
 
             json.append("}");

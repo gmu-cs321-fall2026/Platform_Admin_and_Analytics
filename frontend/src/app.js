@@ -274,6 +274,8 @@ async function loadUsers() {
         const response = await fetch("/api/users");
         if (!response.ok) throw new Error("Unable to load users. Please refresh to try again.");
         allUsers = await response.json();
+        populateAnnouncementFilters();
+        updateAnnouncementRecipients();
         updateStatistics(allUsers);
         searchUsers();
     } catch (error) {
@@ -621,6 +623,16 @@ function previewAnnouncement() {
         .getElementById("announcement-audience")
         .value;
 
+    const recipients = getAnnouncementRecipients();
+
+    if (recipients.length === 0) {
+        error.textContent =
+            "Cannot create an announcement without matching recipients.";
+
+        error.hidden = false;
+        return;
+    }
+
     const error = document.getElementById("announcement-error");
 
     if (!title || !message) {
@@ -642,6 +654,20 @@ function previewAnnouncement() {
     if (!["STUDENTS", "STAFF", "EVERYONE"].includes(audience)) {
         error.textContent = "Please select a valid audience.";
         error.hidden = false;
+        return;
+    }
+
+    // Get selected recipients
+    const recipients = getAnnouncementRecipients();
+
+    // Prevent announcements without recipients
+    if (recipients.length === 0) {
+
+        error.textContent =
+            "Cannot create an announcement without matching recipients.";
+
+        error.hidden = false;
+
         return;
     }
 
@@ -823,4 +849,96 @@ async function sendAnnouncement() {
         sendButton.disabled = announcementSent;
         editButton.disabled = false;
     }
+}
+
+function populateAnnouncementFilters() {
+    const students = allUsers.filter(
+        user => user.role === "STUDENT"
+    );
+
+    const years = [...new Set(
+        students.map(user => user.graduationYear)
+            .filter(Boolean)
+    )].sort();
+
+    const majors = [...new Set(
+        students.map(user => user.major)
+            .filter(Boolean)
+    )].sort();
+
+    const yearSelect =
+        document.getElementById("announcement-year");
+
+    const majorSelect =
+        document.getElementById("announcement-major");
+
+    yearSelect.innerHTML = '<option value="">Select a year</option>';
+
+    majorSelect.innerHTML = '<option value="">Select a major</option>';
+
+    years.forEach(year => {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    });
+
+    majors.forEach(major => {
+        const option = document.createElement("option");
+        option.value = major;
+        option.textContent = major;
+        majorSelect.appendChild(option);
+    });
+}
+
+function getAnnouncementRecipients() {
+    const audience =
+        document.getElementById("announcement-audience").value;
+
+    const students = allUsers.filter(
+        user => user.role === "STUDENT"
+    );
+
+    if (audience === "ALL") {
+        return students;
+    }
+
+    if (audience === "YEAR") {
+        const year = Number(
+            document.getElementById("announcement-year").value
+        );
+
+        return students.filter(
+            user => user.graduationYear === year && year
+        );
+    }
+
+    if (audience === "MAJOR") {
+        const major =
+            document.getElementById("announcement-major").value;
+
+        return students.filter(
+            user => user.major === major && major
+        );
+    }
+
+    return [];
+}
+
+function updateAnnouncementRecipients() {
+    const audience =
+        document.getElementById("announcement-audience").value;
+
+    document.getElementById("announcement-year-container").hidden =
+        audience !== "YEAR";
+
+    document.getElementById("announcement-major-container").hidden =
+        audience !== "MAJOR";
+
+    const recipients = getAnnouncementRecipients();
+
+    document.getElementById("recipient-count").textContent =
+        recipients.length === 0
+            ? "No students match this audience."
+            : `${recipients.length} matching students`;
 }
