@@ -372,7 +372,9 @@
                 <input
                     type="text"
                     id="announcement-title"
+                    maxlength="150"
                     placeholder="Enter announcement title"
+                    required
                 >
         
                 <label for="announcement-message">
@@ -382,9 +384,22 @@
                 <textarea
                     id="announcement-message"
                     rows="6"
+                    maxlength="5000"
                     placeholder="Enter announcement message"
+                    required
+
                 ></textarea>
-        
+                
+                <label for="announcement-audience">
+                    Select Audience
+                </label>
+
+                <select id="announcement-audience">
+                    <option value="STUDENTS">Students</option>
+                    <option value="STAFF">Staff</option>
+                    <option value="EVERYONE">Everyone</option>
+                </select>
+
                 <p id="announcement-error" role="alert" hidden></p>
         
                 <button
@@ -403,15 +418,36 @@
                 <h3>Announcement Preview</h3>
         
                 <h4 id="preview-title"></h4>
+
+                <p>
+                    <strong>Selected Audience:</strong>
+                    <span id="preview-audience"></span>
+                </p>
         
                 <p id="preview-message"></p>
-        
+                
+                <p
+                    id="announcement-send-message"
+                    role="status"
+                    aria-live="polite"
+                ></p>
+
                 <button
                     type="button"
+                    id="announcement-edit"
                     class="view-button"
                     onclick="editAnnouncement()"
                 >
                     Back to Editing
+                </button>
+
+                <button
+                    type="button"
+                    id="announcement-send"
+                    class="view-button"
+                    onclick="sendAnnouncement()"
+                >
+                    Confirm and Send
                 </button>
         
             </div>
