@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Templates | Platform Admin</title>
+    <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">Platform Admin</div>
+        <nav>
+            <a href="/admin" class="nav-item">Dashboard</a>
+            <a href="/admin/users" class="nav-item">Users</a>
+            <a href="/admin/moderation" class="nav-item">Moderation</a>
+            <a href="/admin/audit-log" class="nav-item">Audit Log</a>
+            <a href="/admin/announcements" class="nav-item">Announcements</a>
+            <a href="/admin/notification-templates" class="nav-item active" aria-current="page">Notification Templates</a>
+        </nav>
+    </aside>
+    <main class="main-content">
+        <header class="header">
+            <h1>Notification Templates</h1>
+            <p>Edit and preview notification wording before saving.</p>
+        </header>
+        <p id="notification-load-message" role="status" aria-live="polite">Loading notification templates...</p>
+        <form id="notification-template-form" class="users-section notification-template-editor" hidden>
+            <label for="notification-template-select">Template</label>
+            <select id="notification-template-select"></select>
+            <label for="notification-template-message">Message</label>
+            <textarea id="notification-template-message" rows="6" maxlength="5000" required></textarea>
+            <button type="button" id="notification-template-preview-button" class="view-button">Preview Message</button>
+            <section id="notification-template-preview" aria-labelledby="notification-preview-title" hidden>
+                <h2 id="notification-preview-title">Message Preview</h2>
+                <p id="notification-preview-message"></p>
+            </section>
+            <button type="submit" id="notification-template-save" class="view-button" disabled>Save Template</button>
+            <p id="notification-template-status" role="status" aria-live="polite"></p>
+        </form>
+    </main>
+    <script src="/admin/notification-templates.js"></script>
+</body>
+</html>
