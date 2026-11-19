@@ -59,6 +59,20 @@ public class Main {
                 )
         );
 
+        server.createContext("/api/config/notification-templates", NotificationTemplateApi::handle);
+        server.createContext("/admin/notification-templates.js", exchange -> serveFile(
+                exchange, "frontend/src/notification-templates.js", "application/javascript; charset=utf-8"));
+        server.createContext("/admin/notification-templates", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+            if (!path.equals("/admin/notification-templates") && !path.equals("/admin/notification-templates/")) {
+                AdminHttp.sendError(exchange, 404, "Not found.");
+            } else if (!exchange.getRequestMethod().equals("GET")) {
+                exchange.getResponseHeaders().set("Allow", "GET");
+                AdminHttp.sendError(exchange, 405, "Method not allowed.");
+            } else {
+                serveFile(exchange, "frontend/src/notification-templates.html", "text/html; charset=utf-8");
+            }
+        });
         server.createContext("/api/users", UserApi::handleUsers);
                 server.createContext(
                 "/api/admin/audit-log",

@@ -466,3 +466,14 @@ tbody tr:hover {
 #announcement-error {
     color: #c62828;
 }
+
+/* Notification template editor and plain text preview */
+.notification-template-editor { max-width: 800px; }
+.notification-template-editor label { display: block; margin: 16px 0 6px; font-weight: 600; }
+.notification-template-editor select, .notification-template-editor textarea {
+    display: block; width: 100%; padding: 10px; margin-bottom: 16px;
+    border: 1px solid #d1d5db; border-radius: 6px; font: inherit;
+}
+#notification-template-preview { padding: 16px; margin: 16px 0; border: 1px solid #d1d5db; border-radius: 6px; }
+#notification-preview-message { white-space: pre-wrap; overflow-wrap: anywhere; }
+.notification-template-editor button:disabled { opacity: 0.6; cursor: default; }
