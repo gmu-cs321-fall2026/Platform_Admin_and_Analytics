@@ -657,8 +657,7 @@ function previewAnnouncement() {
         return;
     }
 
-    // Get selected recipients
-    const recipients = getAnnouncementRecipients();
+    
 
     // Prevent announcements without recipients
     if (recipients.length === 0) {
