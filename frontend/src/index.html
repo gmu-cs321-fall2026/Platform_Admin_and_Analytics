@@ -82,7 +82,29 @@
         <p id="load-error" role="alert" hidden></p>
 
         <section id="dashboard-view" hidden>
-        <section class="stats">
+
+    <!-- Filter Usage Statistics by Date -->
+    <form id="statistics-date-filter" class="activity-filters">
+
+        <label for="statistics-start-date">Start Date</label>
+        <input type="date" id="statistics-start-date">
+
+        <label for="statistics-end-date">End Date</label>
+        <input type="date" id="statistics-end-date">
+
+        <button type="submit" class="view-button">
+            Apply Filter
+        </button>
+
+        <button type="button" id="clear-statistics-filter" class="view-button">
+            Clear Filter
+        </button>
+
+    </form>
+
+    <p id="statistics-filter-error" role="alert" hidden></p>
+
+    <section class="stats">
 
             <div class="stat-card">
 
