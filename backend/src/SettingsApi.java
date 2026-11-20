@@ -24,6 +24,19 @@ final class SettingsApi {
             AdminHttp.sendError(exchange, 405, "Method not allowed.");
             return;
         }
+        
+        // Demo-only authorization.
+        // Production access must use authenticated user roles.
+        String demoAdminId = System.getenv("DEMO_ADMIN_ID");
+
+        if (!"demo-admin".equals(demoAdminId)) {
+            AdminHttp.sendError(
+                exchange,
+                403,
+                "Platform Admin access required."
+            );
+            return;
+        }
 
         try {
             AdminHttp.sendJson(exchange, 200, loadSettings());
