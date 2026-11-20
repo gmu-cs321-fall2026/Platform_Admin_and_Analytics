@@ -433,7 +433,8 @@ function showCurrentPage() {
     const links = [
         ["dashboard-link", isDashboardPage],
         ["users-link", isUsersPage],
-        ["announcements-link", isAnnouncementsPage]
+        ["announcements-link", isAnnouncementsPage],
+        ["settings-link", isSettingsPage]
     ];
 
     links.forEach(([id, active]) => {
