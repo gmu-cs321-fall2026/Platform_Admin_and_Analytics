@@ -45,6 +45,61 @@ const userActivities = [
     }
 ];
 
+// Weekly account registration analytics
+async function loadWeeklyRegistrations() {
+    const chart = document.getElementById("weekly-registration-chart");
+    const loading = document.getElementById("registration-chart-loading");
+    const error = document.getElementById("registration-chart-error");
+    chart.hidden = true;
+    loading.hidden = false;
+    error.hidden = true;
+    error.textContent = "";
+
+    try {
+        const response = await fetch("/api/admin/analytics/registrations/weekly?weeks=12");
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Unable to load weekly registrations.");
+        if (!result || !Array.isArray(result.weeks) || result.weeks.length !== 12) {
+            throw new Error("The server returned invalid weekly registration data.");
+        }
+        renderWeeklyRegistrationChart(result.weeks);
+        loading.hidden = true;
+        chart.hidden = false;
+    } catch (failure) {
+        loading.hidden = true;
+        chart.replaceChildren();
+        error.textContent = failure.message || "Unable to load weekly registrations. Please try again.";
+        error.hidden = false;
+    }
+}
+
+function renderWeeklyRegistrationChart(weeks) {
+    const chart = document.getElementById("weekly-registration-chart");
+    chart.replaceChildren();
+    const maxCount = Math.max(1, ...weeks.map(week => Number(week.registrationCount) || 0));
+
+    weeks.forEach(week => {
+        const column = document.createElement("div");
+        column.className = "weekly-registration-column";
+        const count = document.createElement("span");
+        count.className = "weekly-registration-count";
+        count.textContent = String(week.registrationCount);
+        const barTrack = document.createElement("div");
+        barTrack.className = "weekly-registration-bar-track";
+        const bar = document.createElement("div");
+        bar.className = "weekly-registration-bar";
+        const height = Number(week.registrationCount) === 0 ? 2 : Math.max(4, (Number(week.registrationCount) / maxCount) * 150);
+        bar.style.height = `${height}px`;
+        barTrack.appendChild(bar);
+        const date = document.createElement("span");
+        date.className = "weekly-registration-date";
+        date.textContent = week.weekStart;
+        date.title = `Week starting ${week.weekStart}`;
+        column.append(count, barTrack, date);
+        chart.appendChild(column);
+    });
+}
+
 // Update statistics
 function updateStatistics(users) {
 
@@ -445,6 +500,9 @@ function showCurrentPage() {
 }
 
 showCurrentPage();
+if (window.location.pathname.replace(/\/+$/, "") === "/admin" || window.location.pathname.replace(/\/+$/, "") === "") {
+    loadWeeklyRegistrations();
+}
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
 document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
 loadUsers();
