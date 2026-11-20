@@ -58,6 +58,7 @@ public class Main {
         );
 
         server.createContext("/api/users", UserApi::handleUsers);
+        server.createContext("/api/admin/analytics/registrations/weekly", WeeklyRegistrationApi::handle);
                 server.createContext(
                 "/api/admin/audit-log",
                 AuditApi::handle
