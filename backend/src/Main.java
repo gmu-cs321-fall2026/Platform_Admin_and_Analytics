@@ -75,6 +75,9 @@ public class Main {
         );
         server.createContext("/api/admin/announcements", AnnouncementApi::handle);
 
+        // Platform Settings API
+        server.createContext("/api/admin/settings", SettingsApi::handle);       
+
         // Moderation queue API
         server.createContext(
                 "/api/admin/moderation",
