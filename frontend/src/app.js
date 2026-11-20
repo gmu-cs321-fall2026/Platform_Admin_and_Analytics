@@ -463,6 +463,8 @@ function showCurrentPage() {
     if (isSettingsPage) {
     pageTitle.textContent = "Platform Settings";
     pageDescription.textContent = "View platform configuration";
+    loadPlatformSettings();
+        
     } else if (isAnnouncementsPage) {
 
         pageTitle.textContent = "Announcements";
