@@ -381,6 +381,61 @@ async function toggleUserStatus() {
     }
 }
 
+// Display Platform Settings
+async function loadPlatformSettings() {
+    const message = document.getElementById("settings-message");
+
+    const categories = document.getElementById("settings-event-categories");
+    const readiness = document.getElementById("settings-readiness-templates");
+    const notifications = document.getElementById("settings-notification-templates");
+
+    message.textContent = "Loading settings...";
+
+    categories.replaceChildren();
+    readiness.replaceChildren();
+    notifications.replaceChildren();
+
+    try {
+        const response = await fetch("/api/admin/settings");
+
+        if (!response.ok) {
+            throw new Error("Failed to load settings");
+        }
+
+        const data = await response.json();
+
+        function displayItems(element, items, emptyMessage) {
+            if (!Array.isArray(items) || items.length === 0) {
+                const li = document.createElement("li");
+                li.textContent = emptyMessage;
+                element.appendChild(li);
+                return;
+            }
+
+            items.forEach(item => {
+                const li = document.createElement("li");
+                li.textContent = item.name;
+                element.appendChild(li);
+            });
+        }
+
+        displayItems(categories, data.eventCategories,
+            "No event categories configured.");
+
+        displayItems(readiness, data.readinessTemplates,
+            "No readiness checklist templates configured.");
+
+        displayItems(notifications, data.notificationTemplates,
+            "No notification templates configured.");
+
+        message.textContent = "";
+
+    } catch (error) {
+        message.textContent =
+            "Unable to load platform settings. Please try again.";
+    }
+}
+
 // Display the correct admin page
 function showCurrentPage() {
 
