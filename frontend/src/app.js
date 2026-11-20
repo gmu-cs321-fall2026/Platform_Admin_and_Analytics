@@ -405,7 +405,10 @@ function showCurrentPage() {
     const pageTitle = document.getElementById("page-title");
     const pageDescription = document.getElementById("page-description");
 
-    if (isAnnouncementsPage) {
+    if (isSettingsPage) {
+    pageTitle.textContent = "Platform Settings";
+    pageDescription.textContent = "View platform configuration";
+    } else if (isAnnouncementsPage) {
 
         pageTitle.textContent = "Announcements";
         pageDescription.textContent =
