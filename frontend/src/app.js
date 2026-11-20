@@ -444,6 +444,71 @@ function showCurrentPage() {
     });
 }
 
+// Filter Usage Statistics by Date
+let appliedStatisticsDates = {
+    startDate: "",
+    endDate: ""
+};
+
+function applyStatisticsDateFilter(event) {
+    event.preventDefault();
+
+    const startInput = document.getElementById("statistics-start-date");
+    const endInput = document.getElementById("statistics-end-date");
+    const error = document.getElementById("statistics-filter-error");
+
+    const startDate = startInput.value;
+    const endDate = endInput.value;
+
+    error.hidden = true;
+    error.textContent = "";
+
+    // Check for invalid dates
+    if (
+        startInput.validity.badInput ||
+        endInput.validity.badInput ||
+        (startDate && !startInput.validity.valid) ||
+        (endDate && !endInput.validity.valid)
+    ) {
+        error.textContent = "Enter valid start and end dates.";
+        error.hidden = false;
+        return;
+    }
+
+    // Check date order
+    if (startDate && endDate && startDate > endDate) {
+        error.textContent =
+            "Start date cannot be after the end date.";
+        error.hidden = false;
+        return;
+    }
+
+    appliedStatisticsDates = { startDate, endDate };
+
+    // Statistics totals and weekly chart will use these dates
+    // when their APIs are connected.
+}
+
+function clearStatisticsDateFilter() {
+    document.getElementById("statistics-date-filter").reset();
+
+    document.getElementById("statistics-filter-error").hidden = true;
+    document.getElementById("statistics-filter-error").textContent = "";
+
+    appliedStatisticsDates = {
+        startDate: "",
+        endDate: ""
+    };
+
+    // Restore unfiltered statistics when APIs are connected.
+}
+
+document.getElementById("statistics-date-filter")
+    .addEventListener("submit", applyStatisticsDateFilter);
+
+document.getElementById("clear-statistics-filter")
+    .addEventListener("click", clearStatisticsDateFilter);
+
 showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
 document.getElementById("toggle-status").addEventListener("click", toggleUserStatus);
