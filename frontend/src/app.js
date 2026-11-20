@@ -381,6 +381,61 @@ async function toggleUserStatus() {
     }
 }
 
+// Display Platform Settings
+async function loadPlatformSettings() {
+    const message = document.getElementById("settings-message");
+
+    const categories = document.getElementById("settings-event-categories");
+    const readiness = document.getElementById("settings-readiness-templates");
+    const notifications = document.getElementById("settings-notification-templates");
+
+    message.textContent = "Loading settings...";
+
+    categories.replaceChildren();
+    readiness.replaceChildren();
+    notifications.replaceChildren();
+
+    try {
+        const response = await fetch("/api/admin/settings");
+
+        if (!response.ok) {
+            throw new Error("Failed to load settings");
+        }
+
+        const data = await response.json();
+
+        function displayItems(element, items, emptyMessage) {
+            if (!Array.isArray(items) || items.length === 0) {
+                const li = document.createElement("li");
+                li.textContent = emptyMessage;
+                element.appendChild(li);
+                return;
+            }
+
+            items.forEach(item => {
+                const li = document.createElement("li");
+                li.textContent = item.name;
+                element.appendChild(li);
+            });
+        }
+
+        displayItems(categories, data.eventCategories,
+            "No event categories configured.");
+
+        displayItems(readiness, data.readinessTemplates,
+            "No readiness checklist templates configured.");
+
+        displayItems(notifications, data.notificationTemplates,
+            "No notification templates configured.");
+
+        message.textContent = "";
+
+    } catch (error) {
+        message.textContent =
+            "Unable to load platform settings. Please try again.";
+    }
+}
+
 // Display the correct admin page
 function showCurrentPage() {
 
@@ -388,6 +443,7 @@ function showCurrentPage() {
 
     const isUsersPage = path === "/admin/users";
     const isAnnouncementsPage = path === "/admin/announcements";
+    const isSettingsPage = path === "/admin/settings";
     const isDashboardPage = path === "/admin" || path === "";
 
     document.getElementById("dashboard-view").hidden =
@@ -398,11 +454,18 @@ function showCurrentPage() {
 
     document.getElementById("announcements-view").hidden =
         !isAnnouncementsPage;
+    document.getElementById("settings-view").hidden =
+    !isSettingsPage;
 
     const pageTitle = document.getElementById("page-title");
     const pageDescription = document.getElementById("page-description");
 
-    if (isAnnouncementsPage) {
+    if (isSettingsPage) {
+    pageTitle.textContent = "Platform Settings";
+    pageDescription.textContent = "View platform configuration";
+    loadPlatformSettings();
+        
+    } else if (isAnnouncementsPage) {
 
         pageTitle.textContent = "Announcements";
         pageDescription.textContent =
@@ -427,7 +490,8 @@ function showCurrentPage() {
     const links = [
         ["dashboard-link", isDashboardPage],
         ["users-link", isUsersPage],
-        ["announcements-link", isAnnouncementsPage]
+        ["announcements-link", isAnnouncementsPage],
+        ["settings-link", isSettingsPage]
     ];
 
     links.forEach(([id, active]) => {
@@ -443,6 +507,71 @@ function showCurrentPage() {
         }
     });
 }
+
+// Filter Usage Statistics by Date
+let appliedStatisticsDates = {
+    startDate: "",
+    endDate: ""
+};
+
+function applyStatisticsDateFilter(event) {
+    event.preventDefault();
+
+    const startInput = document.getElementById("statistics-start-date");
+    const endInput = document.getElementById("statistics-end-date");
+    const error = document.getElementById("statistics-filter-error");
+
+    const startDate = startInput.value;
+    const endDate = endInput.value;
+
+    error.hidden = true;
+    error.textContent = "";
+
+    // Check for invalid dates
+    if (
+        startInput.validity.badInput ||
+        endInput.validity.badInput ||
+        (startDate && !startInput.validity.valid) ||
+        (endDate && !endInput.validity.valid)
+    ) {
+        error.textContent = "Enter valid start and end dates.";
+        error.hidden = false;
+        return;
+    }
+
+    // Check date order
+    if (startDate && endDate && startDate > endDate) {
+        error.textContent =
+            "Start date cannot be after the end date.";
+        error.hidden = false;
+        return;
+    }
+
+    appliedStatisticsDates = { startDate, endDate };
+
+    // Statistics totals and weekly chart will use these dates
+    // when their APIs are connected.
+}
+
+function clearStatisticsDateFilter() {
+    document.getElementById("statistics-date-filter").reset();
+
+    document.getElementById("statistics-filter-error").hidden = true;
+    document.getElementById("statistics-filter-error").textContent = "";
+
+    appliedStatisticsDates = {
+        startDate: "",
+        endDate: ""
+    };
+
+    // Restore unfiltered statistics when APIs are connected.
+}
+
+document.getElementById("statistics-date-filter")
+    .addEventListener("submit", applyStatisticsDateFilter);
+
+document.getElementById("clear-statistics-filter")
+    .addEventListener("click", clearStatisticsDateFilter);
 
 showCurrentPage();
 document.getElementById("role-form").addEventListener("submit", saveUserRole);
