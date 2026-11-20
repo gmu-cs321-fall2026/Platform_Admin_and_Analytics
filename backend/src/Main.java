@@ -119,6 +119,9 @@ public class Main {
 
         boolean announcements = requestPath.equals("/admin/announcements")
                 || requestPath.equals("/admin/announcements/");
+            
+        boolean settings = requestPath.equals("/admin/settings")
+                || requestPath.equals("/admin/settings/");    
 
         if (!dashboard && !users && !audit && !announcements) {
             byte[] message = "Not found".getBytes(
