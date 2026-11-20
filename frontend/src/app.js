@@ -388,6 +388,7 @@ function showCurrentPage() {
 
     const isUsersPage = path === "/admin/users";
     const isAnnouncementsPage = path === "/admin/announcements";
+    const isSettingsPage = path === "/admin/settings";
     const isDashboardPage = path === "/admin" || path === "";
 
     document.getElementById("dashboard-view").hidden =
@@ -398,6 +399,8 @@ function showCurrentPage() {
 
     document.getElementById("announcements-view").hidden =
         !isAnnouncementsPage;
+    document.getElementById("settings-view").hidden =
+    !isSettingsPage;
 
     const pageTitle = document.getElementById("page-title");
     const pageDescription = document.getElementById("page-description");
