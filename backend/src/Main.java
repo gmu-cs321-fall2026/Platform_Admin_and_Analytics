@@ -123,7 +123,7 @@ public class Main {
         boolean settings = requestPath.equals("/admin/settings")
                 || requestPath.equals("/admin/settings/");    
 
-        if (!dashboard && !users && !audit && !announcements) {
+        if (!dashboard && !users && !audit && !announcements && !settings) {
             byte[] message = "Not found".getBytes(
                     java.nio.charset.StandardCharsets.UTF_8
             );
