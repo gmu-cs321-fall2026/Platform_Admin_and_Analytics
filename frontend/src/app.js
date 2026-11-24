@@ -591,8 +591,8 @@ function applyStatisticsDateFilter(event) {
 
     appliedStatisticsDates = { startDate, endDate };
 
-    // Statistics totals and weekly chart will use these dates
-    // when their APIs are connected.
+    window.loadUsageStatistics(appliedStatisticsDates);
+    window.loadWeeklyRegistrations(appliedStatisticsDates);
 }
 
 function clearStatisticsDateFilter() {
@@ -606,7 +606,8 @@ function clearStatisticsDateFilter() {
         endDate: ""
     };
 
-    // Restore unfiltered statistics when APIs are connected.
+    window.loadUsageStatistics(appliedStatisticsDates);
+    window.loadWeeklyRegistrations(appliedStatisticsDates);
 }
 
 document.getElementById("statistics-date-filter")

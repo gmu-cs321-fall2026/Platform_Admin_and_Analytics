@@ -141,6 +141,7 @@ public class Main {
         server.createContext("/api/users", UserApi::handleUsers);
 
         // Usage statistics.
+        server.createContext("/api/admin/analytics/weekly-registrations", new AnalyticsApi()::handle);
         server.createContext(
                 "/api/admin/analytics/overview",
                 new AnalyticsApi()::handle
