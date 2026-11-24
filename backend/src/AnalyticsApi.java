@@ -207,4 +207,38 @@ public final class AnalyticsApi {
             return rows.getLong(1);
         }
     }
+
+    static long countModerationDecisions(
+            LocalDate startDate, LocalDate endDate) throws Exception {
+    
+        String sql = "SELECT count(*) FROM admin_moderation_decisions "
+                + "WHERE review_status = 'RESOLVED'";
+    
+        if (startDate != null) {
+            sql += " AND (decided_at AT TIME ZONE 'UTC')::date >= ?";
+        }
+    
+        if (endDate != null) {
+            sql += " AND (decided_at AT TIME ZONE 'UTC')::date <= ?";
+        }
+    
+        try (var connection = Database.open();
+             var statement = connection.prepareStatement(sql)) {
+    
+            int index = 1;
+    
+            if (startDate != null) {
+                statement.setObject(index++, startDate);
+            }
+    
+            if (endDate != null) {
+                statement.setObject(index, endDate);
+            }
+    
+            try (var rows = statement.executeQuery()) {
+                rows.next();
+                return rows.getLong(1);
+            }
+        }
+    }
 }
