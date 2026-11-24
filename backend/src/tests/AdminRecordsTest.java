@@ -126,6 +126,77 @@ public final class AdminRecordsTest {
         }
     }
 
+
+    private static void assertDateRangeFiltering(HttpServer app)
+        throws Exception {
+
+        String url = "/api/admin/analytics/overview";
+    
+        try {
+            execute("""
+                    INSERT INTO admin_moderation_decisions
+                    (queue_item_id, target_type, target_id,
+                     review_status, action, admin_id, reason, decided_at)
+                    VALUES
+                    ('DATE-TEST-1', 'FLAGGED_POST', '901',
+                     'RESOLVED', 'POST_REMOVED', 'test-admin',
+                     'Date filter test', '2020-01-09T23:59:59Z'),
+    
+                    ('DATE-TEST-2', 'FLAGGED_POST', '902',
+                     'RESOLVED', 'POST_REMOVED', 'test-admin',
+                     'Date filter test', '2020-01-10T00:00:00Z'),
+    
+                    ('DATE-TEST-3', 'FLAGGED_POST', '903',
+                     'RESOLVED', 'POST_REMOVED', 'test-admin',
+                     'Date filter test', '2020-01-20T23:59:59Z'),
+    
+                    ('DATE-TEST-4', 'FLAGGED_POST', '904',
+                     'RESOLVED', 'POST_REMOVED', 'test-admin',
+                     'Date filter test', '2020-01-21T00:00:00Z')
+                    """);
+    
+            // Include both boundary dates.
+            String filtered = expectStatus(app, "GET",
+                    url + "?startDate=2020-01-10&endDate=2020-01-20",
+                    "", 200);
+    
+            check(com.google.gson.JsonParser.parseString(filtered)
+                    .getAsJsonObject()
+                    .get("moderationDecisions").getAsLong() == 2,
+                    "Include both boundary dates and exclude outside dates.");
+    
+            // Filter a single day.
+            String singleDay = expectStatus(app, "GET",
+                    url + "?startDate=2020-01-10&endDate=2020-01-10",
+                    "", 200);
+    
+            check(com.google.gson.JsonParser.parseString(singleDay)
+                    .getAsJsonObject()
+                    .get("moderationDecisions").getAsLong() == 1,
+                    "A single-day filter must include that day's decisions.");
+    
+            // Date range with no decisions.
+            String empty = expectStatus(app, "GET",
+                    url + "?startDate=2020-01-11&endDate=2020-01-19",
+                    "", 200);
+    
+            check(com.google.gson.JsonParser.parseString(empty)
+                    .getAsJsonObject()
+                    .get("moderationDecisions").getAsLong() == 0,
+                    "An empty date range must return zero.");
+    
+        } finally {
+            execute("""
+                    DELETE FROM admin_moderation_decisions
+                    WHERE queue_item_id IN
+                    ('DATE-TEST-1', 'DATE-TEST-2',
+                     'DATE-TEST-3', 'DATE-TEST-4')
+                    """);
+        }
+    }
+
+    
+
     private static void execute(String sql) throws Exception {
         try (var connection = Database.open(); var statement = connection.createStatement()) {
             statement.execute(sql);
