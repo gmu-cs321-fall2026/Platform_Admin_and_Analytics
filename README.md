@@ -50,3 +50,6 @@ Expand the subsystem with user activity history, content moderation, and an admi
 
 ### Sprint 4 Goal 
 The goal of Sprint 4 is to complete the remaining moderation actions, add targeted announcements, and connect the subsystem to PostgreSQL. Staff will be able to create, preview, and submit announcements to selected students. Admin records will be stored in the database, and GitHub Actions will run automated checks to block failing pull requests from being merged into main.
+
+### Sprint 5 Goal
+The goal of Sprint 5 is to add usage statistics and platform configuration. Admins can review saved configuration and edit event categories, the default readiness checklist, and notification templates.  Announcement and moderation integrations are carryovers and will be finished.
