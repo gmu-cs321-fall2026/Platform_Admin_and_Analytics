@@ -126,7 +126,6 @@ public final class AdminRecordsTest {
         }
     }
 
-
     private static void assertDateRangeFiltering(HttpServer app)
         throws Exception {
 
@@ -193,9 +192,7 @@ public final class AdminRecordsTest {
                      'DATE-TEST-3', 'DATE-TEST-4')
                     """);
         }
-    }
-
-    
+    }    
 
     private static void execute(String sql) throws Exception {
         try (var connection = Database.open(); var statement = connection.createStatement()) {
