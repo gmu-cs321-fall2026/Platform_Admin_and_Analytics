@@ -57,7 +57,15 @@ services:
     volumes:
       - ./backend/src/database/migrations:/migrations:ro
     entrypoint: ["psql", "-X", "-v", "ON_ERROR_STOP=1"]
-    command: ["-f", "/migrations/001_admin_records.sql", "-f", "/migrations/002_event_categories.sql", "-f", "/migrations/003_readiness_checklist_templates.sql"]
+    command:
+      - "-f"
+      - "/migrations/001_admin_records.sql"
+      - "-f"
+      - "/migrations/002_event_categories.sql"
+      - "-f"
+      - "/migrations/003_readiness_checklist_templates.sql"
+      - "-f"
+      - "/migrations/004_notification_templates.sql"
     restart: "no"
 
 volumes:

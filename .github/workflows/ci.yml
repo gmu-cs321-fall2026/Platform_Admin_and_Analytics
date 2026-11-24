@@ -55,4 +55,5 @@ jobs:
           docker compose exec -T db psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 < backend/src/database/tests/001_admin_records_test.sql
           docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' AdminRecordsTest
           docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' CategoryApiTest
-          docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' ChecklistTemplateApiTest  
+          docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' ChecklistTemplateApiTest
+          docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' NotificationTemplateApiTest
