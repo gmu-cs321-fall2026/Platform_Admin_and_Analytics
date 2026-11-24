@@ -66,6 +66,10 @@ services:
       - "/migrations/003_readiness_checklist_templates.sql"
       - "-f"
       - "/migrations/004_notification_templates.sql"
+      - "-f"
+      - "/migrations/005_repair_event_categories.sql"
+      - "-f"
+      - "/migrations/006_initial_configuration.sql"
     restart: "no"
 
 volumes:

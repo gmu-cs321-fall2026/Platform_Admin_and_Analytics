@@ -57,3 +57,5 @@ jobs:
           docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' CategoryApiTest
           docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' ChecklistTemplateApiTest
           docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' NotificationTemplateApiTest
+          docker compose run --rm --no-deps --entrypoint java backend -cp '/app/out:/app/lib/*' Sprint5Test
+          docker compose run --rm --no-deps --volume "$PWD/backend/src/database/tests:/tests:ro" migrate -f /tests/005_repair_event_categories_test.sql

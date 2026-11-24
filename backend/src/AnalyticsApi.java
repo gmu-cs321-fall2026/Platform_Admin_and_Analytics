@@ -37,7 +37,8 @@ public final class AnalyticsApi {
     }
 
     public void handle(HttpExchange exchange) throws IOException {
-        if (!exchange.getRequestURI().getPath().equals("/api/admin/analytics/overview")) {
+        String path = exchange.getRequestURI().getPath();
+        if (!path.equals("/api/admin/analytics/overview") && !path.equals("/api/admin/analytics/weekly-registrations")) {
             AdminHttp.sendError(exchange, 404, "Not found.");
             return;
         }
@@ -46,10 +47,24 @@ public final class AnalyticsApi {
             AdminHttp.sendError(exchange, 405, "Use GET to view usage statistics.");
             return;
         }
-        AdminHttp.sendJson(exchange, 200, overview().toString());
+        try {
+            StatisticsDateRange range = StatisticsDateRange.parse(exchange.getRequestURI().getRawQuery());
+            if (path.endsWith("/weekly-registrations")) {
+                AdminHttp.sendError(exchange, 503,
+                        "Weekly registration data is unavailable. Shared Core has not published a registration-history API.");
+                return;
+            }
+            AdminHttp.sendJson(exchange, 200, overview(range).toString());
+        } catch (IllegalArgumentException error) {
+            AdminHttp.sendError(exchange, 400, "Use valid YYYY-MM-DD dates with startDate on or before endDate.");
+        }
     }
 
     JsonObject overview() {
+        return overview(new StatisticsDateRange(null, null));
+    }
+
+    JsonObject overview(StatisticsDateRange range) {
         JsonObject result = new JsonObject();
         // Shared Core has no implemented all-account count endpoint. Its draft
         // /users/search contract includes active accounts only.
@@ -57,9 +72,11 @@ public final class AnalyticsApi {
         result.add("eventsCreated", com.google.gson.JsonNull.INSTANCE);
         result.add("eventRegistrations", com.google.gson.JsonNull.INSTANCE);
         result.add("moderationDecisions", com.google.gson.JsonNull.INSTANCE);
-        readEvents(result);
+        // The Events endpoint has counts but no creation/registration date filter.
+        // Do not show unfiltered counts as though they matched a selected range.
+        if (!range.hasBounds()) readEvents(result);
         try {
-            long count = moderationCount.read();
+            long count = range.hasBounds() ? countModerationDecisions(range) : moderationCount.read();
             if (count < 0) throw new IllegalStateException("Invalid moderation count.");
             result.addProperty("moderationDecisions", count);
         } catch (Exception error) {
@@ -140,12 +157,21 @@ public final class AnalyticsApi {
     }
 
     static long countModerationDecisions() throws Exception {
-        try (var connection = Database.open();
-             var statement = connection.prepareStatement(
-                     "SELECT count(*) FROM admin_moderation_decisions WHERE review_status = 'RESOLVED'");
-             var rows = statement.executeQuery()) {
-            rows.next();
-            return rows.getLong(1);
+        return countModerationDecisions(new StatisticsDateRange(null, null));
+    }
+
+    static long countModerationDecisions(StatisticsDateRange range) throws Exception {
+        String sql = "SELECT count(*) FROM admin_moderation_decisions WHERE review_status = 'RESOLVED'"
+                + (range.startDate() == null ? "" : " AND decided_at >= ?")
+                + (range.endDate() == null ? "" : " AND decided_at < ?");
+        try (var connection = Database.open(); var statement = connection.prepareStatement(sql)) {
+            int parameter = 1;
+            if (range.startDate() != null) statement.setObject(parameter++, range.startInclusive());
+            if (range.endDate() != null) statement.setObject(parameter, range.endExclusive());
+            try (var rows = statement.executeQuery()) {
+                rows.next();
+                return rows.getLong(1);
+            }
         }
     }
 }

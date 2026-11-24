@@ -123,7 +123,9 @@ public class UserApi {
         boolean changingStatus = path.endsWith("/status");
         byte[] body = exchange.getRequestBody().readNBytes(65);
         String value = new String(body, StandardCharsets.UTF_8).trim();
-        boolean validValue = changingStatus ? User.isValidStatus(value) : User.isValidRole(value);
+        boolean validValue = changingStatus
+                ? ("ACTIVE".equals(value) || "SUSPENDED".equals(value))
+                : User.isValidRole(value);
         if (body.length > 64 || !validValue) {
             String error = changingStatus ? "Choose ACTIVE or SUSPENDED" : "Choose STUDENT, STAFF, or ADMIN";
             sendResponse(exchange, 400, "{\"error\":\"" + error + "\"}");

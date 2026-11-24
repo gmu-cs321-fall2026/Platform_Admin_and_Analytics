@@ -252,9 +252,14 @@ async function saveModerationDecision(event) {
         }
         
         backToModerationQueue();
-        await loadModerationQueue();
-        document.getElementById("moderation-message").textContent =
-            "Moderation decision saved successfully.";
+        const reloaded = await loadModerationQueue();
+        if (reloaded) {
+            document.getElementById("moderation-message").textContent =
+                "Moderation decision saved successfully.";
+        } else {
+            document.getElementById("moderation-message").textContent =
+                "Decision saved, but the queue could not be refreshed. Refresh the queue before taking another action.";
+        }
         
     } catch (failure) {
         error.textContent = failure.message || "Could not save the moderation decision.";
@@ -315,6 +320,7 @@ async function loadModerationQueue() {
         updateModerationPagination();
 
         message.textContent = "";
+        return true;
     } catch (error) {
         if (requestNumber !== moderationRequestNumber) {
             return;
@@ -338,6 +344,7 @@ async function loadModerationQueue() {
         message.textContent =
             error.message
             || "Could not load the moderation queue. Please try again.";
+        return false;
     }
 }
 

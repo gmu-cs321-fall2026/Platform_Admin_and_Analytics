@@ -28,42 +28,16 @@
             Platform Admin
         </div>
 
-        <nav>
-            <a href="/admin"
-                id="dashboard-link"
-                class="nav-item">
-                Dashboard
-            </a>
-
-            <a href="/admin/users"
-                id="users-link"
-                class="nav-item">
-                Users
-            </a>
-
-            <a href="/admin/moderation" class="nav-item">
-                Moderation
-            </a>
-
-            <a href="/admin/audit-log" class="nav-item">
-                Audit Log
-            </a>
-
-            <a href="/admin/announcements"
-               id="announcements-link"
-               class="nav-item">
-                Announcements
-            </a>
-
-            <a href="/admin/settings"
-               id="settings-link"
-               class="nav-item">
-                Settings
-            </a>
-            
-<a href="/admin/event-categories" class="nav-item">Event Categories</a>
-<a href="/admin/readiness-checklist" class="nav-item">Readiness Checklist</a>
-<a href="/admin/notification-templates" class="nav-item">Notification Templates</a>
+        <nav aria-label="Admin navigation">
+            <a href="/admin" id="dashboard-link" class="nav-item">Dashboard</a>
+            <a href="/admin/users" id="users-link" class="nav-item">Users</a>
+            <a href="/admin/moderation" class="nav-item">Moderation</a>
+            <a href="/admin/audit-log" class="nav-item">Audit Log</a>
+            <a href="/admin/announcements" id="announcements-link" class="nav-item">Announcements</a>
+            <a href="/admin/event-categories" class="nav-item">Event Categories</a>
+            <a href="/admin/readiness-checklist" class="nav-item">Readiness Checklist</a>
+            <a href="/admin/notification-templates" class="nav-item">Notification Templates</a>
+            <a href="/admin/settings" id="settings-link" class="nav-item">Settings</a>
         </nav>
 
     </aside>
@@ -107,7 +81,8 @@
 
 <p id="statistics-filter-error" role="alert" hidden></p>
         <h2>Usage Statistics</h2>
-        <p>Totals for all available records. Event registrations reflect current registrations.</p>
+        <p id="statistics-range-description">Totals for all available records. Event registrations reflect current registrations.</p>
+        <p id="statistics-source-note" role="status">Account totals need Shared Core. Events totals need a configured Events API.</p>
         <section class="stats" aria-label="Usage statistics" aria-live="polite">
             <div class="stat-card">
                 <div class="stat-title">New Accounts</div>
@@ -125,6 +100,11 @@
                 <div class="stat-title">Moderation Decisions</div>
                 <div class="stat-number" id="usage-moderation-decisions">Loading...</div>
             </div>
+        </section>
+
+        <section aria-labelledby="weekly-registrations-heading">
+            <h2 id="weekly-registrations-heading">Weekly Account Registrations</h2>
+            <p id="weekly-registrations-message" role="status" aria-live="polite">Loading registration data...</p>
         </section>
 
         <section class="stats">
@@ -148,7 +128,7 @@
             <div class="stat-card">
 
                 <div class="stat-title">
-                    Active Users
+                    Active Accounts
                 </div>
 
                 <div
@@ -406,6 +386,8 @@
         <section id="announcements-view" class="users-section" hidden>
         
             <h2>Make an Announcement</h2>
+            <p role="status">Drafts can be saved locally. Major and graduation-year filters need Shared Core profile data.
+                Sending is unavailable until Communications publishes its broadcast and retry contract.</p>
         
             <!-- Announcement Editor -->
             <div id="announcement-editor">
@@ -456,6 +438,8 @@
                 <p id="preview-message"></p>
                 <p id="preview-audience"></p>
 
+                <button type="button" class="view-button" disabled aria-describedby="announcement-send-unavailable">Send Announcement</button>
+                <p id="announcement-send-unavailable">Sending unavailable: Communications integration is pending. Saving a draft does not send it.</p>
                 <button type="button" id="announcement-save" class="view-button">
                     Save Draft
                 </button>

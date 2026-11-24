@@ -11,6 +11,7 @@ async function render(response, pathname = "/admin") {
     const elements = Object.fromEntries(ids.map(id => [id, { textContent: "Loading..." }]));
     const calls = [];
     const context = vm.createContext({
+        URLSearchParams,
         window: { location: { pathname } },
         document: { getElementById: id => elements[id] },
         fetch: url => {

@@ -9,13 +9,16 @@
 <body>
     <aside class="sidebar">
         <div class="logo">Platform Admin</div>
-        <nav>
-            <a href="/admin" class="nav-item">Dashboard</a>
-            <a href="/admin/users" class="nav-item">Users</a>
+        <nav aria-label="Admin navigation">
+            <a href="/admin" id="dashboard-link" class="nav-item">Dashboard</a>
+            <a href="/admin/users" id="users-link" class="nav-item">Users</a>
             <a href="/admin/moderation" class="nav-item">Moderation</a>
             <a href="/admin/audit-log" class="nav-item">Audit Log</a>
-            <a href="/admin/announcements" class="nav-item">Announcements</a>
+            <a href="/admin/announcements" id="announcements-link" class="nav-item">Announcements</a>
+            <a href="/admin/event-categories" class="nav-item">Event Categories</a>
             <a href="/admin/readiness-checklist" class="nav-item active" aria-current="page">Readiness Checklist</a>
+            <a href="/admin/notification-templates" class="nav-item">Notification Templates</a>
+            <a href="/admin/settings" id="settings-link" class="nav-item">Settings</a>
         </nav>
     </aside>
     <main class="main-content">
