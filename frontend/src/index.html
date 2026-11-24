@@ -54,6 +54,13 @@
                class="nav-item">
                 Announcements
             </a>
+
+            <a href="/admin/settings"
+               id="settings-link"
+               class="nav-item">
+                Settings
+            </a>
+            
 <a href="/admin/event-categories" class="nav-item">Event Categories</a>
 <a href="/admin/readiness-checklist" class="nav-item">Readiness Checklist</a>
 <a href="/admin/notification-templates" class="nav-item">Notification Templates</a>
@@ -85,6 +92,20 @@
         <p id="load-error" role="alert" hidden></p>
 
         <section id="dashboard-view" hidden>
+          <form id="statistics-date-filter" class="activity-filters">
+    <label for="statistics-start-date">Start Date</label>
+    <input type="date" id="statistics-start-date">
+
+    <label for="statistics-end-date">End Date</label>
+    <input type="date" id="statistics-end-date">
+
+    <button type="submit" class="view-button">Apply Filter</button>
+    <button type="button" id="clear-statistics-filter" class="view-button">
+        Clear Filter
+    </button>
+</form>
+
+<p id="statistics-filter-error" role="alert" hidden></p>
         <h2>Usage Statistics</h2>
         <p>Totals for all available records. Event registrations reflect current registrations.</p>
         <section class="stats" aria-label="Usage statistics" aria-live="polite">
@@ -456,6 +477,25 @@
             <h3>Saved Announcements</h3>
             <p id="announcement-list-status" role="status"></p>
             <ul id="saved-announcements"></ul>
+        </section>
+       
+        <!-- Platform Settings -->
+        <section id="settings-view" class="users-section" hidden>
+        
+            <h2>Platform Settings</h2>
+            <p>View the current platform configuration.</p>
+        
+            <p id="settings-message" role="status"></p>
+        
+            <h3>Event Categories</h3>
+            <ul id="settings-event-categories"></ul>
+        
+            <h3>Readiness Checklist Templates</h3>
+            <ul id="settings-readiness-templates"></ul>
+        
+            <h3>Notification Templates</h3>
+            <ul id="settings-notification-templates"></ul>
+        
         </section>
         
     </main>

@@ -167,7 +167,10 @@ public class Main {
                 AnnouncementApi::handle
         );
 
-        // Moderation.
+        // Platform Settings API
+        server.createContext("/api/admin/settings", SettingsApi::handle);       
+
+        // Moderation queue API
         server.createContext(
                 "/api/admin/moderation",
                 ModerationApi::handleQueue
@@ -202,8 +205,11 @@ public class Main {
 
         boolean announcements = requestPath.equals("/admin/announcements")
                 || requestPath.equals("/admin/announcements/");
+            
+        boolean settings = requestPath.equals("/admin/settings")
+                || requestPath.equals("/admin/settings/");    
 
-        if (!dashboard && !users && !audit && !announcements) {
+        if (!dashboard && !users && !audit && !announcements && !settings) {
             byte[] message = "Not found".getBytes(
                     java.nio.charset.StandardCharsets.UTF_8
             );
