@@ -467,6 +467,16 @@ tbody tr:hover {
     color: #c62828;
 }
 
+/* Default readiness checklist editor */
+.checklist-fields { border: 0; padding: 0; margin: 0; }
+.checklist-fields legend { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+.checklist-item { margin-bottom: 20px; padding-left: 8px; }
+.checklist-item label { display: block; margin-bottom: 6px; font-weight: 600; }
+.checklist-item textarea {
+    display: block; width: 100%; max-width: 700px; margin-bottom: 8px;
+    padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit;
+}
+.checklist-fields button:disabled { opacity: 0.6; cursor: wait; }
 /* Existing event category editor */
 .category-editor { max-width: 760px; margin-bottom: 24px; }
 .category-editor label { display: block; margin: 16px 0 6px; font-weight: 600; }
