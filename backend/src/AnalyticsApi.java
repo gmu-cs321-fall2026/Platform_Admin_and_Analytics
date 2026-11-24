@@ -50,7 +50,56 @@ public final class AnalyticsApi {
             AdminHttp.sendError(exchange, 405, "Use GET to view usage statistics.");
             return;
         }
-        AdminHttp.sendJson(exchange, 200, overview().toString());
+        try {
+            LocalDate startDate = null;
+            LocalDate endDate = null;
+        
+            String query = exchange.getRequestURI().getRawQuery();
+        
+            if (query != null) {
+                for (String parameter : query.split("&")) {
+                    String[] parts = parameter.split("=", 2);
+        
+                    if (parts.length != 2) continue;
+        
+                    String value = URLDecoder.decode(
+                            parts[1], StandardCharsets.UTF_8);
+        
+                    if (value.isBlank()) continue;
+        
+                    if (parts[0].equals("startDate")) {
+                        startDate = LocalDate.parse(value);
+                    }
+        
+                    if (parts[0].equals("endDate")) {
+                        endDate = LocalDate.parse(value);
+                    }
+                }
+            }
+        
+            if (startDate != null && endDate != null
+                    && startDate.isAfter(endDate)) {
+                AdminHttp.sendError(exchange, 400,
+                        "Start date cannot be after the end date.");
+                return;
+            }
+        
+            AdminHttp.sendJson(exchange, 200,
+                    overview(startDate, endDate).toString());
+        
+        } catch (DateTimeParseException | IllegalArgumentException error) {
+            AdminHttp.sendError(exchange, 400,
+                    "Enter valid start and end dates.");
+        }
+
+
+
+
+
+
+
+        
+        
     }
 
     JsonObject overview() {
