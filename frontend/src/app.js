@@ -384,13 +384,11 @@ async function toggleUserStatus() {
 // Display Platform Settings
 async function loadPlatformSettings() {
     const message = document.getElementById("settings-message");
-
     const categories = document.getElementById("settings-event-categories");
     const readiness = document.getElementById("settings-readiness-templates");
     const notifications = document.getElementById("settings-notification-templates");
 
     message.textContent = "Loading settings...";
-
     categories.replaceChildren();
     readiness.replaceChildren();
     notifications.replaceChildren();
@@ -399,38 +397,82 @@ async function loadPlatformSettings() {
         const response = await fetch("/api/admin/settings");
 
         if (!response.ok) {
-            throw new Error("Failed to load settings");
+            throw new Error("Could not load platform settings.");
         }
 
         const data = await response.json();
 
-        function displayItems(element, items, emptyMessage) {
-            if (!Array.isArray(items) || items.length === 0) {
-                const li = document.createElement("li");
-                li.textContent = emptyMessage;
-                element.appendChild(li);
+        const validCategories = Array.isArray(data.eventCategories)
+            && data.eventCategories.every(item => item
+                && typeof item.name === "string"
+                && typeof item.description === "string");
+
+        const validReadiness = Array.isArray(data.readinessTemplates)
+            && data.readinessTemplates.every(item => item
+                && typeof item.id === "string"
+                && Array.isArray(item.items)
+                && item.items.every(text => typeof text === "string"));
+
+        const validNotifications = Array.isArray(data.notificationTemplates)
+            && data.notificationTemplates.every(item => item
+                && typeof item.name === "string"
+                && typeof item.message === "string");
+
+        if (!validCategories || !validReadiness || !validNotifications) {
+            throw new Error("Invalid settings response.");
+        }
+
+        function displayItems(container, items, emptyMessage, formatItem) {
+            if (items.length === 0) {
+                const entry = document.createElement("li");
+                entry.textContent = emptyMessage;
+                container.appendChild(entry);
                 return;
             }
 
             items.forEach(item => {
-                const li = document.createElement("li");
-                li.textContent = item.name;
-                element.appendChild(li);
+                const entry = document.createElement("li");
+                entry.style.whiteSpace = "pre-wrap";
+                entry.textContent = formatItem(item);
+                container.appendChild(entry);
             });
         }
 
-        displayItems(categories, data.eventCategories,
-            "No event categories configured.");
+        displayItems(
+            categories,
+            data.eventCategories,
+            "No event categories configured.",
+            item => item.description
+                ? `${item.name}\n${item.description}`
+                : item.name
+        );
 
-        displayItems(readiness, data.readinessTemplates,
-            "No readiness checklist templates configured.");
+        displayItems(
+            readiness,
+            data.readinessTemplates,
+            "No readiness checklist templates configured.",
+            item => {
+                const checklist = item.items.length
+                    ? item.items.map((text, index) => `${index + 1}. ${text}`).join("\n")
+                    : "No checklist items configured.";
 
-        displayItems(notifications, data.notificationTemplates,
-            "No notification templates configured.");
+                return `${item.id}\n${checklist}`;
+            }
+        );
+
+        displayItems(
+            notifications,
+            data.notificationTemplates,
+            "No notification templates configured.",
+            item => `${item.name}\n${item.message}`
+        );
 
         message.textContent = "";
-
     } catch (error) {
+        categories.replaceChildren();
+        readiness.replaceChildren();
+        notifications.replaceChildren();
+
         message.textContent =
             "Unable to load platform settings. Please try again.";
     }
