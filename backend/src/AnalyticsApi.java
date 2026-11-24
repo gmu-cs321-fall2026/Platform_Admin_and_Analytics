@@ -95,6 +95,10 @@ public final class AnalyticsApi {
     }
 
     JsonObject overview() {
+        return overview(null, null);
+    }
+    
+    JsonObject overview(LocalDate startDate, LocalDate endDate) {    
         JsonObject result = new JsonObject();
         // Shared Core has no implemented all-account count endpoint. Its draft
         // /users/search contract includes active accounts only.
@@ -102,9 +106,19 @@ public final class AnalyticsApi {
         result.add("eventsCreated", com.google.gson.JsonNull.INSTANCE);
         result.add("eventRegistrations", com.google.gson.JsonNull.INSTANCE);
         result.add("moderationDecisions", com.google.gson.JsonNull.INSTANCE);
-        readEvents(result);
+
+        boolean filtered = startDate != null || endDate != null;
+
+        // Only use overall event totals when no date filter is applied.
+        if (!filtered) {
+            readEvents(result);
+         }
+            
         try {
-            long count = moderationCount.read();
+            long count = filtered
+                    ? countModerationDecisions(startDate, endDate)
+                    : moderationCount.read();
+            
             if (count < 0) throw new IllegalStateException("Invalid moderation count.");
             result.addProperty("moderationDecisions", count);
         } catch (Exception error) {
