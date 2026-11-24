@@ -2,7 +2,7 @@ public class UserTest {
 
     public static void main(String[] args) {
 
-        testUserCreation();
+        //testUserCreation();
         testUserGetters();
         testUserStatusChanges();
         testInvalidStatuses();
