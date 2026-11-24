@@ -82,6 +82,65 @@ public final class AnalyticsTest {
             var post = client.send(HttpRequest.newBuilder(URI.create(url))
                     .POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString());
             check(post.statusCode() == 405, "The statistics route is read-only.");
+
+            // Date filter tests
+            var invalidDate = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                            url + "?startDate=2026-02-30"))
+                            .GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            
+            check(invalidDate.statusCode() == 400,
+                    "Invalid dates must return HTTP 400.");
+            
+            var reversedDates = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                            url + "?startDate=2026-11-20&endDate=2026-11-01"))
+                            .GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            
+            check(reversedDates.statusCode() == 400,
+                    "Reversed dates must return HTTP 400.");
+            
+            var validDates = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                            url + "?startDate=2026-11-01&endDate=2026-11-20"))
+                            .GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            
+            check(validDates.statusCode() == 200,
+                    "Valid date ranges must return HTTP 200.");
+            
+            JsonObject filteredTotals = JsonParser
+                    .parseString(validDates.body()).getAsJsonObject();
+            
+            check(filteredTotals.get("eventsCreated").isJsonNull(),
+                    "Do not return unfiltered event totals.");
+            
+            check(filteredTotals.get("eventRegistrations").isJsonNull(),
+                    "Do not return unfiltered registration totals.");
+            
+            var sameDate = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                            url + "?startDate=2026-11-20&endDate=2026-11-20"))
+                            .GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            
+            check(sameDate.statusCode() == 200,
+                    "Same-day date ranges must be accepted.");
+            
+            var clearedFilter = client.send(
+                    HttpRequest.newBuilder(URI.create(url))
+                            .GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            
+            check(clearedFilter.statusCode() == 200,
+                    "Clearing the filter must restore the default overview.");
+            
+            check(JsonParser.parseString(clearedFilter.body())
+                    .getAsJsonObject().get("moderationDecisions").getAsLong() == 7,
+                    "Unfiltered moderation totals must remain unchanged.");
+            
         } finally {
             app.stop(0);
             upstream.stop(0);
