@@ -26,101 +26,170 @@ public class Main {
                 0
         );
 
-        // Redirect Docker's default URL to the dashboard
+        // Redirect Docker's default URL to the dashboard.
         server.createContext("/", exchange -> {
             exchange.getResponseHeaders().set("Location", "/admin");
             exchange.sendResponseHeaders(302, -1);
             exchange.close();
         });
 
-        // Admin dashboard
+        server.createContext("/admin", Main::handleAdminPage);
+
+        server.createContext("/admin/style.css", exchange -> serveFile(
+                exchange,
+                "frontend/src/style.css",
+                "text/css"
+        ));
+
+        server.createContext("/admin/app.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/app.js",
+                "application/javascript"
+        ));
+
+        // Event categories.
         server.createContext(
-                "/admin",
-                Main::handleAdminPage
+                "/api/config/event-categories",
+                CategoryApi::handle
         );
 
-        // CSS
-        server.createContext(
-                "/admin/style.css",
-                exchange -> serveFile(
-                        exchange,
-                        "frontend/src/style.css",
-                        "text/css"
-                )
-        );
+        server.createContext("/admin/event-categories.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/event-categories.js",
+                "application/javascript; charset=utf-8"
+        ));
 
-        // JavaScript
-        server.createContext(
-                "/admin/app.js",
-                exchange -> serveFile(
-                        exchange,
-                        "frontend/src/app.js",
-                        "application/javascript"
-                )
-        );
-
-        server.createContext("/api/config/notification-templates", NotificationTemplateApi::handle);
-        server.createContext("/admin/notification-templates.js", exchange -> serveFile(
-                exchange, "frontend/src/notification-templates.js", "application/javascript; charset=utf-8"));
-        server.createContext("/admin/notification-templates", exchange -> {
+        server.createContext("/admin/event-categories", exchange -> {
             String path = exchange.getRequestURI().getPath();
-            if (!path.equals("/admin/notification-templates") && !path.equals("/admin/notification-templates/")) {
+
+            if (!path.equals("/admin/event-categories")
+                    && !path.equals("/admin/event-categories/")) {
                 AdminHttp.sendError(exchange, 404, "Not found.");
             } else if (!exchange.getRequestMethod().equals("GET")) {
                 exchange.getResponseHeaders().set("Allow", "GET");
                 AdminHttp.sendError(exchange, 405, "Method not allowed.");
             } else {
-                serveFile(exchange, "frontend/src/notification-templates.html", "text/html; charset=utf-8");
+                serveFile(
+                        exchange,
+                        "frontend/src/event-categories.html",
+                        "text/html; charset=utf-8"
+                );
             }
         });
-        server.createContext("/api/users", UserApi::handleUsers);
-                server.createContext(
-                "/api/admin/audit-log",
-                AuditApi::handle
-        );
 
+        // Readiness checklist templates.
         server.createContext(
-                "/admin/audit-log.js",
-                exchange -> serveFile(
-                        exchange,
-                        "frontend/src/audit-log.js",
-                        "application/javascript; charset=utf-8"
-                )
+                "/api/config/readiness-checklist-templates",
+                ChecklistTemplateApi::handle
         );
-        server.createContext("/api/admin/announcements", AnnouncementApi::handle);
 
-        // Moderation queue API
+        server.createContext("/admin/readiness-checklist.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/readiness-checklist.js",
+                "application/javascript; charset=utf-8"
+        ));
+
+        server.createContext("/admin/readiness-checklist", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+
+            if (!path.equals("/admin/readiness-checklist")
+                    && !path.equals("/admin/readiness-checklist/")) {
+                AdminHttp.sendError(exchange, 404, "Not found.");
+            } else if (!exchange.getRequestMethod().equals("GET")) {
+                exchange.getResponseHeaders().set("Allow", "GET");
+                AdminHttp.sendError(exchange, 405, "Method not allowed.");
+            } else {
+                serveFile(
+                        exchange,
+                        "frontend/src/readiness-checklist.html",
+                        "text/html; charset=utf-8"
+                );
+            }
+        });
+
+        // Notification templates.
+        server.createContext(
+                "/api/config/notification-templates",
+                NotificationTemplateApi::handle
+        );
+
+        server.createContext("/admin/notification-templates.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/notification-templates.js",
+                "application/javascript; charset=utf-8"
+        ));
+
+        server.createContext("/admin/notification-templates", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+
+            if (!path.equals("/admin/notification-templates")
+                    && !path.equals("/admin/notification-templates/")) {
+                AdminHttp.sendError(exchange, 404, "Not found.");
+            } else if (!exchange.getRequestMethod().equals("GET")) {
+                exchange.getResponseHeaders().set("Allow", "GET");
+                AdminHttp.sendError(exchange, 405, "Method not allowed.");
+            } else {
+                serveFile(
+                        exchange,
+                        "frontend/src/notification-templates.html",
+                        "text/html; charset=utf-8"
+                );
+            }
+        });
+
+        // User management.
+        server.createContext("/api/users", UserApi::handleUsers);
+
+        // Usage statistics.
+        server.createContext(
+                "/api/admin/analytics/overview",
+                new AnalyticsApi()::handle
+        );
+
+        server.createContext("/admin/analytics.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/analytics.js",
+                "application/javascript; charset=utf-8"
+        ));
+
+        // Audit log.
+        server.createContext("/api/admin/audit-log", AuditApi::handle);
+
+        server.createContext("/admin/audit-log.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/audit-log.js",
+                "application/javascript; charset=utf-8"
+        ));
+
+        // Announcements.
+        server.createContext(
+                "/api/admin/announcements",
+                AnnouncementApi::handle
+        );
+
+        // Moderation.
         server.createContext(
                 "/api/admin/moderation",
                 ModerationApi::handleQueue
         );
 
-        // Moderation page
         server.createContext(
                 "/admin/moderation",
                 ModerationApi::handlePage
         );
 
-        // Moderation JavaScript
-        server.createContext(
-                "/admin/moderation.js",
-                exchange -> serveFile(
-                        exchange,
-                        "frontend/src/moderation.js",
-                        "application/javascript; charset=utf-8"
-                )
-        );
-        server.start();
+        server.createContext("/admin/moderation.js", exchange -> serveFile(
+                exchange,
+                "frontend/src/moderation.js",
+                "application/javascript; charset=utf-8"
+        ));
 
+        server.start();
         return server;
     }
 
-        private static void handleAdminPage(
-            HttpExchange exchange
-    ) throws IOException {
-
-        String requestPath =
-                exchange.getRequestURI().getPath();
+    private static void handleAdminPage(HttpExchange exchange) throws IOException {
+        String requestPath = exchange.getRequestURI().getPath();
 
         boolean dashboard = requestPath.equals("/admin")
                 || requestPath.equals("/admin/");
@@ -141,8 +210,7 @@ public class Main {
 
             exchange.sendResponseHeaders(404, message.length);
 
-            try (OutputStream output =
-                         exchange.getResponseBody()) {
+            try (OutputStream output = exchange.getResponseBody()) {
                 output.write(message);
             }
 
@@ -170,46 +238,26 @@ public class Main {
             String filePath,
             String contentType
     ) throws IOException {
-
         Path path = Path.of(filePath);
 
         if (!Files.exists(path)) {
+            String response = "File not found: " + filePath;
 
-            String response =
-                    "File not found: " + filePath;
+            exchange.sendResponseHeaders(404, response.length());
 
-            exchange.sendResponseHeaders(
-                    404,
-                    response.length()
-            );
-
-            try (OutputStream output =
-                         exchange.getResponseBody()) {
-
-                output.write(
-                        response.getBytes()
-                );
+            try (OutputStream output = exchange.getResponseBody()) {
+                output.write(response.getBytes());
             }
 
             return;
         }
 
-        byte[] file =
-                Files.readAllBytes(path);
+        byte[] file = Files.readAllBytes(path);
 
-        exchange.getResponseHeaders().set(
-                "Content-Type",
-                contentType
-        );
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(200, file.length);
 
-        exchange.sendResponseHeaders(
-                200,
-                file.length
-        );
-
-        try (OutputStream output =
-                     exchange.getResponseBody()) {
-
+        try (OutputStream output = exchange.getResponseBody()) {
             output.write(file);
         }
     }
