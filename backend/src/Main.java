@@ -93,9 +93,7 @@ public class Main {
             } else {
                 serveFile(exchange, "frontend/src/readiness-checklist.html",
                         "text/html; charset=utf-8");
-            }
-        });
-            }
+                       }
         });
         server.createContext("/api/users", UserApi::handleUsers);
         server.createContext("/api/admin/analytics/overview", new AnalyticsApi()::handle);
