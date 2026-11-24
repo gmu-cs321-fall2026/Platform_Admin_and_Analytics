@@ -466,3 +466,12 @@ tbody tr:hover {
 #announcement-error {
     color: #c62828;
 }
+
+/* Existing event category editor */
+.category-editor { max-width: 760px; margin-bottom: 24px; }
+.category-editor label { display: block; margin: 16px 0 6px; font-weight: 600; }
+.category-editor input, .category-editor textarea {
+    display: block; width: 100%; padding: 10px; margin-bottom: 16px;
+    border: 1px solid #d1d5db; border-radius: 6px; font: inherit;
+}
+.category-editor button:disabled { opacity: 0.6; cursor: wait; }
