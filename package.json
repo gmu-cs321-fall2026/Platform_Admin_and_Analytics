@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint frontend/src",
-    "test": "node --test frontend/tests/frontend.test.cjs"
+    "test": "node --test frontend/tests/*.test.cjs"
   },
   "devDependencies": {
     "eslint": "^9.0.0"

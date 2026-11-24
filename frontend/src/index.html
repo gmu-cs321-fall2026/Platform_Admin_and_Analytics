@@ -61,6 +61,9 @@
                 Settings
             </a>
             
+<a href="/admin/event-categories" class="nav-item">Event Categories</a>
+<a href="/admin/readiness-checklist" class="nav-item">Readiness Checklist</a>
+<a href="/admin/notification-templates" class="nav-item">Notification Templates</a>
         </nav>
 
     </aside>
@@ -89,29 +92,42 @@
         <p id="load-error" role="alert" hidden></p>
 
         <section id="dashboard-view" hidden>
+          <form id="statistics-date-filter" class="activity-filters">
+    <label for="statistics-start-date">Start Date</label>
+    <input type="date" id="statistics-start-date">
 
-    <!-- Filter Usage Statistics by Date -->
-    <form id="statistics-date-filter" class="activity-filters">
+    <label for="statistics-end-date">End Date</label>
+    <input type="date" id="statistics-end-date">
 
-        <label for="statistics-start-date">Start Date</label>
-        <input type="date" id="statistics-start-date">
+    <button type="submit" class="view-button">Apply Filter</button>
+    <button type="button" id="clear-statistics-filter" class="view-button">
+        Clear Filter
+    </button>
+</form>
 
-        <label for="statistics-end-date">End Date</label>
-        <input type="date" id="statistics-end-date">
+<p id="statistics-filter-error" role="alert" hidden></p>
+        <h2>Usage Statistics</h2>
+        <p>Totals for all available records. Event registrations reflect current registrations.</p>
+        <section class="stats" aria-label="Usage statistics" aria-live="polite">
+            <div class="stat-card">
+                <div class="stat-title">New Accounts</div>
+                <div class="stat-number" id="usage-new-accounts">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Events Created</div>
+                <div class="stat-number" id="usage-events-created">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Event Registrations</div>
+                <div class="stat-number" id="usage-event-registrations">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Moderation Decisions</div>
+                <div class="stat-number" id="usage-moderation-decisions">Loading...</div>
+            </div>
+        </section>
 
-        <button type="submit" class="view-button">
-            Apply Filter
-        </button>
-
-        <button type="button" id="clear-statistics-filter" class="view-button">
-            Clear Filter
-        </button>
-
-    </form>
-
-    <p id="statistics-filter-error" role="alert" hidden></p>
-
-    <section class="stats">
+        <section class="stats">
 
             <div class="stat-card">
 
@@ -486,6 +502,7 @@
 
 
     <script src="/admin/app.js"></script>
+    <script src="/admin/analytics.js"></script>
 
 </body>
 

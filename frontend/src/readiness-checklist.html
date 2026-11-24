@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readiness Checklist Template | Platform Admin</title>
+    <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">Platform Admin</div>
+        <nav>
+            <a href="/admin" class="nav-item">Dashboard</a>
+            <a href="/admin/users" class="nav-item">Users</a>
+            <a href="/admin/moderation" class="nav-item">Moderation</a>
+            <a href="/admin/audit-log" class="nav-item">Audit Log</a>
+            <a href="/admin/announcements" class="nav-item">Announcements</a>
+            <a href="/admin/readiness-checklist" class="nav-item active" aria-current="page">Readiness Checklist</a>
+        </nav>
+    </aside>
+    <main class="main-content">
+        <header class="header">
+            <h1>Default Readiness Checklist</h1>
+            <p>Update the guidance used for new student checklists.</p>
+        </header>
+        <p id="checklist-load-message" role="status" aria-live="polite">Loading checklist template...</p>
+        <form id="checklist-form" class="users-section" hidden>
+            <fieldset id="checklist-fields" class="checklist-fields">
+                <legend>Checklist items</legend>
+                <ol id="checklist-items"></ol>
+                <p id="checklist-empty">No checklist items. Add an item to get started.</p>
+                <button type="button" id="checklist-add" class="view-button">Add Item</button>
+                <button type="submit" id="checklist-save" class="view-button">Save Template</button>
+            </fieldset>
+            <p id="checklist-message" role="status" aria-live="polite"></p>
+        </form>
+    </main>
+    <script src="/admin/readiness-checklist.js"></script>
+</body>
+</html>
