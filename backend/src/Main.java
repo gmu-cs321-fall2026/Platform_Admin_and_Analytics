@@ -59,21 +59,48 @@ public class Main {
                 )
         );
 
-        server.createContext("/api/config/readiness-checklist-templates", ChecklistTemplateApi::handle);
-        server.createContext("/admin/readiness-checklist.js", exchange -> serveFile(
-                exchange, "frontend/src/readiness-checklist.js", "application/javascript; charset=utf-8"));
-        server.createContext("/admin/readiness-checklist", exchange -> {
+        server.createContext("/api/config/event-categories", CategoryApi::handle);
+        server.createContext("/admin/event-categories.js", exchange -> serveFile(
+                exchange, "frontend/src/event-categories.js",
+                "application/javascript; charset=utf-8"));
+        server.createContext("/admin/event-categories", exchange -> {
             String path = exchange.getRequestURI().getPath();
-            if (!path.equals("/admin/readiness-checklist") && !path.equals("/admin/readiness-checklist/")) {
+            if (!path.equals("/admin/event-categories")
+                    && !path.equals("/admin/event-categories/")) {
                 AdminHttp.sendError(exchange, 404, "Not found.");
             } else if (!exchange.getRequestMethod().equals("GET")) {
                 exchange.getResponseHeaders().set("Allow", "GET");
                 AdminHttp.sendError(exchange, 405, "Method not allowed.");
             } else {
-                serveFile(exchange, "frontend/src/readiness-checklist.html", "text/html; charset=utf-8");
+                serveFile(exchange, "frontend/src/event-categories.html",
+                        "text/html; charset=utf-8");
+            }
+        });
+
+        server.createContext("/api/config/readiness-checklist-templates",
+                ChecklistTemplateApi::handle);
+        server.createContext("/admin/readiness-checklist.js", exchange -> serveFile(
+                exchange, "frontend/src/readiness-checklist.js",
+                "application/javascript; charset=utf-8"));
+        server.createContext("/admin/readiness-checklist", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+            if (!path.equals("/admin/readiness-checklist")
+                    && !path.equals("/admin/readiness-checklist/")) {
+                AdminHttp.sendError(exchange, 404, "Not found.");
+            } else if (!exchange.getRequestMethod().equals("GET")) {
+                exchange.getResponseHeaders().set("Allow", "GET");
+                AdminHttp.sendError(exchange, 405, "Method not allowed.");
+            } else {
+                serveFile(exchange, "frontend/src/readiness-checklist.html",
+                        "text/html; charset=utf-8");
+            }
+        });
             }
         });
         server.createContext("/api/users", UserApi::handleUsers);
+        server.createContext("/api/admin/analytics/overview", new AnalyticsApi()::handle);
+        server.createContext("/admin/analytics.js", exchange -> serveFile(
+                exchange, "frontend/src/analytics.js", "application/javascript; charset=utf-8"));
                 server.createContext(
                 "/api/admin/audit-log",
                 AuditApi::handle
