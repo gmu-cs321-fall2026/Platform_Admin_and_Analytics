@@ -49,60 +49,76 @@ final class SettingsApi {
         }
     }
 
-    private static String loadSettings() throws SQLException {
-
+       private static String loadSettings() throws SQLException {
         StringJoiner categories = new StringJoiner(",", "[", "]");
         StringJoiner readiness = new StringJoiner(",", "[", "]");
         StringJoiner notifications = new StringJoiner(",", "[", "]");
 
         try (var connection = Database.open()) {
-
             try (var statement = connection.prepareStatement(
-                    "SELECT id, name FROM admin_event_categories ORDER BY name");
+                    "SELECT id, name, description "
+                            + "FROM admin_event_categories "
+                            + "ORDER BY lower(name), id");
                  var rows = statement.executeQuery()) {
 
                 while (rows.next()) {
                     categories.add(
-                        "{\"id\":" + AuditLog.quote(rows.getString("id"))
-                        + ",\"name\":" + AuditLog.quote(rows.getString("name"))
-                        + "}"
+                            "{\"id\":" + AuditLog.quote(rows.getString("id"))
+                                    + ",\"name\":" + AuditLog.quote(rows.getString("name"))
+                                    + ",\"description\":"
+                                    + AuditLog.quote(rows.getString("description"))
+                                    + "}"
                     );
                 }
             }
 
-            try (var statement = connection.prepareStatement(
-                    "SELECT id, name, checklist FROM admin_readiness_templates ORDER BY name");
+            String checklistSql = """
+                    SELECT template.id,
+                           COALESCE(
+                               jsonb_agg(item.item_text ORDER BY item.position)
+                                   FILTER (WHERE item.position IS NOT NULL),
+                               '[]'::jsonb
+                           ) AS items
+                    FROM admin_readiness_templates template
+                    LEFT JOIN admin_readiness_template_items item
+                        ON item.template_id = template.id
+                    GROUP BY template.id
+                    ORDER BY template.id
+                    """;
+
+            try (var statement = connection.prepareStatement(checklistSql);
                  var rows = statement.executeQuery()) {
 
                 while (rows.next()) {
                     readiness.add(
-                        "{\"id\":" + AuditLog.quote(rows.getString("id"))
-                        + ",\"name\":" + AuditLog.quote(rows.getString("name"))
-                        + ",\"checklist\":" + rows.getString("checklist")
-                        + "}"
+                            "{\"id\":" + AuditLog.quote(rows.getString("id"))
+                                    + ",\"items\":" + rows.getString("items")
+                                    + "}"
                     );
                 }
             }
 
             try (var statement = connection.prepareStatement(
-                    "SELECT id, name, subject, message FROM admin_notification_templates ORDER BY name");
+                    "SELECT id, name, message "
+                            + "FROM admin_notification_templates "
+                            + "ORDER BY name, id");
                  var rows = statement.executeQuery()) {
 
                 while (rows.next()) {
                     notifications.add(
-                        "{\"id\":" + AuditLog.quote(rows.getString("id"))
-                        + ",\"name\":" + AuditLog.quote(rows.getString("name"))
-                        + ",\"subject\":" + AuditLog.quote(rows.getString("subject"))
-                        + ",\"message\":" + AuditLog.quote(rows.getString("message"))
-                        + "}"
+                            "{\"id\":" + AuditLog.quote(rows.getString("id"))
+                                    + ",\"name\":" + AuditLog.quote(rows.getString("name"))
+                                    + ",\"message\":"
+                                    + AuditLog.quote(rows.getString("message"))
+                                    + "}"
                     );
                 }
             }
         }
 
         return "{\"eventCategories\":" + categories
-            + ",\"readinessTemplates\":" + readiness
-            + ",\"notificationTemplates\":" + notifications
-            + "}";
+                + ",\"readinessTemplates\":" + readiness
+                + ",\"notificationTemplates\":" + notifications
+                + "}";
     }
 }
