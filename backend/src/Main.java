@@ -74,6 +74,9 @@ public class Main {
             }
         });
         server.createContext("/api/users", UserApi::handleUsers);
+        server.createContext("/api/admin/analytics/overview", new AnalyticsApi()::handle);
+        server.createContext("/admin/analytics.js", exchange -> serveFile(
+                exchange, "frontend/src/analytics.js", "application/javascript; charset=utf-8"));
                 server.createContext(
                 "/api/admin/audit-log",
                 AuditApi::handle

@@ -47,6 +47,14 @@ public final class AdminRecordsTest {
                     form("action", "FLAG_DISMISSED", "reason", "Duplicate"), 409);
             expect(app, "POST", MODERATION + "/MOD-002/decision",
                     form("action", "ACCOUNT_SUSPENDED", "reason", "Account report reviewed"), "\"status\":\"RESOLVED\"");
+            long decisions = count("SELECT count(*) FROM admin_moderation_decisions WHERE review_status = 'RESOLVED'");
+            String statistics = expect(app, "GET", "/api/admin/analytics/overview", "",
+                    "\"moderationDecisions\":" + decisions);
+            check(com.google.gson.JsonParser.parseString(statistics).getAsJsonObject()
+                    .get("moderationDecisions").getAsLong() == decisions,
+                    "The overview must count saved moderation decisions.");
+            expect(app, "GET", "/admin/analytics.js", "", "loadUsageStatistics");
+            expect(app, "GET", "/admin", "", "usage-event-registrations");
 
             expectStatus(app, "PUT", ANNOUNCEMENTS,
                     form("id", draftId.toString(), "title", "Title", "message", "Message", "studentIds", "2"), 400);
