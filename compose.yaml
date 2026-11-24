@@ -56,7 +56,7 @@ services:
       PGPASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
     volumes:
       - ./backend/src/database/migrations:/migrations:ro
-        entrypoint: ["psql", "-X", "-v", "ON_ERROR_STOP=1"]
+    entrypoint: ["psql", "-X", "-v", "ON_ERROR_STOP=1"]
     command:
       - "-f"
       - "/migrations/001_admin_records.sql"
