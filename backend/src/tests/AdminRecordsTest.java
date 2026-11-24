@@ -55,7 +55,8 @@ public final class AdminRecordsTest {
                     "The overview must count saved moderation decisions.");
             expect(app, "GET", "/admin/analytics.js", "", "loadUsageStatistics");
             expect(app, "GET", "/admin", "", "usage-event-registrations");
-
+            assertDateRangeFiltering(app);
+            
             expectStatus(app, "PUT", ANNOUNCEMENTS,
                     form("id", draftId.toString(), "title", "Title", "message", "Message", "studentIds", "2"), 400);
             expect(app, "PUT", ANNOUNCEMENTS, draft, "\"dispatchStatus\":\"DRAFT\"");
